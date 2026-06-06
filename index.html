@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Spiel</title>
+<title>Ninos Mega Spiel</title>
 
 <style>
 body {
@@ -10,9 +10,9 @@ body {
     text-align: center;
     background: linear-gradient(#4facfe, #00f2fe);
     color: white;
-    overflow:hidden;
 }
 
+/* Strecke /
 .track {
     width: 90%;
     height: 180px;
@@ -22,11 +22,19 @@ body {
     position: relative;
 }
 
+/ Fahrzeuge */
 .player {
     position: absolute;
     left: 0px;
     top: 20px;
     font-size: 80px;
+}
+
+.enemy {
+    position: absolute;
+    left: 0px;
+    top: 100px;
+    font-size: 70px;
 }
 
 .finish {
@@ -41,36 +49,15 @@ body {
     font-weight: bold;
 }
 
-/* Buttons /
 button {
-    font-size: 28px;
+    font-size: 26px;
     margin: 10px;
-    padding: 15px;
-    border-radius: 12px;
-    background: orange;
-    border: none;
-    color: white;
+    padding: 12px;
 }
 
-button:hover {
-    background: red;
-}
-
-/ Sterne /
-#stars {
-    font-size: 30px;
-}
-
-/ Konfetti */
-.confetti {
-    position: absolute;
-    font-size: 25px;
-    animation: fall 2s linear forwards;
-}
-
-@keyframes fall {
-    0% { transform: translateY(-50px); }
-    100% { transform: translateY(500px); }
+#achievements {
+    margin-top: 10px;
+    font-size: 20px;
 }
 </style>
 
@@ -78,24 +65,35 @@ button:hover {
 
 <body>
 
-<h1>🚜💥 Ninos Lern-Spiel ⭐</h1>
+<h1>🚜💥 Ninos Mega Spiel 🏁</h1>
 
+<!-- MENU -->
 <div id="menu">
-    <button onclick="startLevel()">⭐ Level 1 starten</button>
+    <h2>Level wählen</h2>
+    <button onclick="startLevel(1)">⭐ Level 1</button>
+    <button onclick="startLevel(2)">🏁 Level 2</button>
+    <button onclick="startLevel(3)">🔥 Level 3</button>
+
+    <h2>Fahrzeug</h2>
+    <div id="cars"></div>
 </div>
 
+<!-- GAME -->
 <div id="game" style="display:none;">
 
 <div class="track">
     <div id="player" class="player">🚜</div>
+    <div id="enemy" class="enemy">🚗</div>
     <div class="finish">🏁</div>
 </div>
 
 <p id="question"></p>
 <div id="answers"></div>
-
 <p id="feedback"></p>
+
 <p id="stars">⭐ Sterne: 0</p>
+
+<div id="achievements"></div>
 
 <button onclick="location.reload()">⬅ Menü</button>
 
@@ -104,20 +102,92 @@ button:hover {
 <script>
 
 var correct = 0;
+var level = 1;
 var stars = 0;
 
-// Start
-function startLevel() {
+var playerPos = 0;
+var enemyPos = 0;
+var enemySpeed = 2;
+
+var currentCar = "🚜";
+var unlockedCars = ["🚜"];
+
+var achievements = [];
+
+// --- GAME LOOP ---
+setInterval(function () {
+
+    if (level > 1) {
+        enemyPos += enemySpeed;
+        document.getElementById("enemy").style.left = enemyPos + "px";
+
+        if (enemyPos > 300) {
+            document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
+            reset();
+        }
+    }
+
+    document.getElementById("player").style.left = playerPos + "px";
+
+}, 100);
+
+// --- START LEVEL ---
+function startLevel(l){
+
+    level = l;
+    stars = 0;
+    playerPos = 0;
+    enemyPos = 0;
+
+    if (level === 1) {
+        document.getElementById("enemy").style.display = "none";
+    } else {
+        document.getElementById("enemy").style.display = "block";
+    }
+
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
+
+    document.getElementById("player").innerText = currentCar;
+
     newQuestion();
 }
 
-// Aufgabe
-function newQuestion() {
+// --- CARS ---
+function renderCars(){
 
-    var a = Math.floor(Math.random()*10);
-    var b = Math.floor(Math.random()*10);
+    var div = document.getElementById("cars");
+    div.innerHTML = "";
+
+    unlockedCars.forEach(function(car){
+        var btn = document.createElement("button");
+        btn.innerText = car;
+        btn.onclick = function(){
+            currentCar = car;
+        };
+        div.appendChild(btn);
+    });
+}
+
+renderCars();
+
+// --- ACHIEVEMENTS ---
+function addAchievement(text){
+    if (!achievements.includes(text)){
+        achievements.push(text);
+
+        var div = document.getElementById("achievements");
+        div.innerHTML += "<div>🏆 " + text + "</div>";
+    }
+}
+
+// --- QUESTION ---
+function newQuestion(){
+
+    var max = 5 + level * 5;
+
+    var a = Math.floor(Math.random()*max);
+    var b = Math.floor(Math.random()*max);
 
     correct = a + b;
 
@@ -126,92 +196,78 @@ function newQuestion() {
 
     var answers = [correct];
 
-    while (answers.length < 4) {
+    while (answers.length < 4){
         var wrong = correct + Math.floor(Math.random()*6)-3;
-        if (wrong >= 0 && !answers.includes(wrong)) {
+        if (wrong >= 0 && !answers.includes(wrong)){
             answers.push(wrong);
         }
     }
 
-    answers.sort(function(){ return Math.random() - 0.5; });
+    answers.sort(function(){ return Math.random()-0.5; });
 
     var box = document.getElementById("answers");
     box.innerHTML = "";
 
-    for (var i = 0; i < answers.length; i++) {
+    answers.forEach(function(val){
         var btn = document.createElement("button");
-        btn.innerText = answers[i];
-
-        btn.onclick = (function(v){
-            return function(){
-                check(v);
-            };
-        })(answers[i]);
-
+        btn.innerText = val;
+        btn.onclick = function(){ check(val); };
         box.appendChild(btn);
-    }
+    });
 }
 
-// Antwort prüfen
-function check(v) {
+// --- CHECK ---
+function check(v){
 
-    if (v === correct) {
+    if (v === correct){
 
-        // ⭐ normaler Stern
-        stars++;
-
-        // 🎁 Bonus Zufall
-        if (Math.random() < 0.3) {
+        if (level === 1){
             stars++;
-            document.getElementById("feedback").innerText =
-                "🎁 BONUS Stern!!!";
+            document.getElementById("stars").innerText = "⭐ Sterne: " + stars;
+
+            document.getElementById("feedback").innerText = "🎉 Super Nino!";
+
+            if (stars === 1) addAchievement("Erster Stern ⭐");
+
+            if (stars === 5){
+                addAchievement("Sternensammler ⭐⭐⭐⭐⭐");
+                unlockCar("🚙");
+            }
+
         } else {
 
-            // zufällige Kinder-Nachrichten
-            var texts = ["🎉 SUPER!", "🚀 WOW!", "💥 MEGA!", "👏 TOLL Nino!"];
-            var t = texts[Math.floor(Math.random()*texts.length)];
+            playerPos += 30;
 
-            document.getElementById("feedback").innerText = t;
-        }
-
-        document.getElementById("stars").innerText =
-            "⭐ Sterne: " + stars;
-
-        // 🎊 Konfetti
-        createConfetti();
-
-        // 🏆 Level geschafft
-        if (stars >= 5) {
-            document.getElementById("feedback").innerText =
-                "🏆 DU BIST EIN CHAMPION!!!";
-            stars = 0;
+            if (playerPos > 300){
+                addAchievement("Rennen gewonnen 🏁");
+                unlockCar("🚓");
+                document.getElementById("feedback").innerText = "🏆 GEWONNEN!";
+                reset();
+            }
         }
 
     } else {
-
-        document.getElementById("feedback").innerText =
-            "😅 Versuch nochmal!";
+        document.getElementById("feedback").innerText = "😅 Versuch nochmal!";
     }
 
     setTimeout(newQuestion, 800);
 }
 
-// 🎊 Konfetti Funktion
-function createConfetti() {
+// --- UNLOCK CAR ---
+function unlockCar(car){
+    if (!unlockedCars.includes(car)){
+        unlockedCars.push(car);
+        renderCars();
 
-    for (var i=0; i<10; i++) {
-        var el = document.createElement("div");
-        el.innerText = "🎈";
-        el.className = "confetti";
-
-        el.style.left = Math.random()*window.innerWidth + "px";
-
-        document.body.appendChild(el);
-
-        setTimeout(function(e){
-            e.remove();
-        }, 2000, el);
+        document.getElementById("feedback").innerText =
+            "🎁 Neues Fahrzeug freigeschaltet! " + car;
     }
+}
+
+// --- RESET ---
+function reset(){
+    playerPos = 0;
+    enemyPos = 0;
 }
 
 </script>
