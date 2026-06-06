@@ -2,23 +2,23 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Mario Kart Monster Truck</title>
+<title>Ninos Monster Truck Spiel</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: #4facfe;
+    background: linear-gradient(#4facfe, #00f2fe);
     color: white;
 }
 
 /* Strecke /
 .track {
     width: 90%;
-    height: 160px;
+    height: 180px;
     background: #333;
     margin: 20px auto;
-    border-radius: 15px;
+    border-radius: 20px;
     position: relative;
 }
 
@@ -27,36 +27,67 @@ body {
     position: absolute;
     left: 0px;
     top: 20px;
-    font-size: 60px;
+    font-size: 80px;
 }
 
 .enemy {
     position: absolute;
     left: 0px;
-    top: 90px;
-    font-size: 50px;
+    top: 100px;
+    font-size: 70px;
 }
 
 / Ziel /
 .finish {
     position: absolute;
     right: 10px;
-    top: 50px;
-    font-size: 30px;
+    top: 60px;
+    font-size: 40px;
 }
 
-/ Item Box /
+/ Item /
 .item {
     position: absolute;
-    top: 60px;
-    font-size: 35px;
+    top: 70px;
+    font-size: 40px;
 }
 
-/ UI */
+/ Frage (RIESIG) /
+#question {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 20px;
+}
+
+/ Buttons /
 button {
-    font-size: 22px;
-    margin: 8px;
-    padding: 12px;
+    font-size: 28px;
+    margin: 10px;
+    padding: 20px;
+    border-radius: 15px;
+    border: none;
+    color: white;
+    background: orange;
+}
+
+button:hover {
+    background: red;
+}
+
+/ Menü Buttons /
+.menu button {
+    background: green;
+}
+
+/ Feedback /
+#feedback {
+    font-size: 28px;
+    margin: 10px;
+}
+
+/ Combo */
+#combo {
+    font-size: 28px;
 }
 </style>
 
@@ -64,15 +95,17 @@ button {
 
 <body>
 
-<h1>🚜💥 Ninos Mario Kart Rennen 🏁</h1>
+<h1>🚜💥 Ninos Monster Truck Rennen 🏁</h1>
 
-<!-- LEVEL -->
-<div id="menu">
-    <button onclick="startLevel(1)">Level 1</button>
-    <button onclick="startLevel(2)">Level 2</button>
-    <button onclick="startLevel(3)">Level 3</button>
+<!-- Menü -->
+<div id="menu" class="menu">
+    <h2>Wähl ein Level, Nino!</h2>
+    <button onclick="startLevel(1)">🌵 leicht</button>
+    <button onclick="startLevel(2)">🏔️ mittel</button>
+    <button onclick="startLevel(3)">🌋 schwer</button>
 </div>
 
+<!-- Spiel -->
 <div id="game" style="display:none;">
 
 <div class="track">
@@ -87,7 +120,7 @@ button {
 <p id="feedback"></p>
 <p>🔥 Combo: <span id="combo">0</span></p>
 
-<button onclick="back()">⬅ Menü</button>
+<button onclick="back()">⬅ Zurück</button>
 
 </div>
 
@@ -100,8 +133,9 @@ var combo = 0;
 var level = 1;
 var enemySpeed = 2;
 
-// START LEVEL
+// Start Level
 function startLevel(l) {
+
     level = l;
 
     if (level === 1) enemySpeed = 1.5;
@@ -115,76 +149,68 @@ function startLevel(l) {
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
 
-    moveItem(); // neues Item platzieren
+    moveItem();
     updatePositions();
     newQuestion();
 }
 
-// Menü
+// zurück
 function back() {
     document.getElementById("game").style.display = "none";
     document.getElementById("menu").style.display = "block";
 }
 
-// Gegner Bewegung
+// Gegner fährt
 setInterval(function() {
     enemyPos += enemySpeed;
     updatePositions();
 
     if (enemyPos >= 300) {
-        document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
+        document.getElementById("feedback").innerText = "😱 Der Gegner war schneller!";
         reset();
     }
 }, 800);
 
-// Item positionieren
-function moveItem() {
-    var randomPos = Math.random() * 250;
-    document.getElementById("item").style.left = randomPos + "px";
-}
-
-// Position anwenden
+// Positionen
 function updatePositions() {
     document.getElementById("player").style.left = playerPos + "px";
     document.getElementById("enemy").style.left = enemyPos + "px";
 
-    checkItemCollision();
+    checkItem();
 }
 
-// Item prüfen
-function checkItemCollision() {
-    var item = document.getElementById("item");
+// Item platzieren
+function moveItem() {
+    var pos = Math.random() * 250;
+    document.getElementById("item").style.left = pos + "px";
+}
 
-    var itemPos = item.offsetLeft;
+// Item check
+function checkItem() {
+    var item = document.getElementById("item").offsetLeft;
 
-    // Spieler sammelt Item
-    if (Math.abs(playerPos - itemPos) < 20) {
+    if (Math.abs(playerPos - item) < 30) {
         useItem();
         moveItem();
     }
 }
 
-// ITEM SYSTEM
+// Item benutzen
 function useItem() {
 
     var r = Math.random();
 
-    // 🚀 TURBO
     if (r < 0.33) {
-        playerPos += 50;
-        document.getElementById("feedback").innerText = "🚀 TURBO ITEM!";
+        playerPos += 60;
+        document.getElementById("feedback").innerText = "🚀 Turbo Boost!";
     }
-
-    // 🐌 Gegner langsamer
     else if (r < 0.66) {
         enemySpeed = 1;
         document.getElementById("feedback").innerText = "🐌 Gegner langsam!";
     }
-
-    // 💥 SUPER BOOST
     else {
-        playerPos += 80;
-        document.getElementById("feedback").innerText = "💥 MEGA BOOST!";
+        playerPos += 100;
+        document.getElementById("feedback").innerText = "💥 Mega Boost!";
     }
 
     updatePositions();
@@ -215,47 +241,47 @@ function newQuestion() {
 
     answers.sort(function(){ return Math.random() - 0.5; });
 
-    var container = document.getElementById("answers");
-    container.innerHTML = "";
+    var box = document.getElementById("answers");
+    box.innerHTML = "";
 
     for (var i = 0; i < answers.length; i++) {
         var btn = document.createElement("button");
         btn.innerText = answers[i];
 
-        btn.onclick = (function(value){
+        btn.onclick = (function(v){
             return function(){
-                check(value);
+                check(v);
             };
         })(answers[i]);
 
-        container.appendChild(btn);
+        box.appendChild(btn);
     }
 }
 
 // Antwort
-function check(value) {
+function check(v) {
 
-    if (value === correct) {
+    if (v === correct) {
 
         combo++;
         playerPos += 30;
 
-        document.getElementById("feedback").innerText = "✅ Richtig!";
+        document.getElementById("feedback").innerText = "🎉 Super Nino!";
 
         if (combo >= 3) {
-            playerPos += 50;
+            playerPos += 60;
             document.getElementById("feedback").innerText = "🚀 TURBO!";
             combo = 0;
         }
 
         if (playerPos >= 300) {
-            document.getElementById("feedback").innerText = "🏆 Nino gewinnt!";
+            document.getElementById("feedback").innerText = "🏆 Du hast gewonnen Nino!!!";
             reset();
         }
 
     } else {
         combo = 0;
-        document.getElementById("feedback").innerText = "❌ Falsch!";
+        document.getElementById("feedback").innerText = "😅 Versuch nochmal!";
     }
 
     document.getElementById("combo").innerText = combo;
@@ -271,7 +297,6 @@ function reset() {
     enemyPos = 0;
     combo = 0;
     moveItem();
-
     updatePositions();
 }
 
