@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Rennen</title>
+<title>Ninos Monster Truck Spiel</title>
 
 <style>
 body {
@@ -21,6 +21,7 @@ body {
     position: relative;
 }
 
+/* Trucks /
 .player {
     position: absolute;
     left: 0px;
@@ -35,6 +36,7 @@ body {
     font-size: 70px;
 }
 
+/ Ziel /
 .finish {
     position: absolute;
     right: 10px;
@@ -42,21 +44,25 @@ body {
     font-size: 40px;
 }
 
+/ Item /
 .item {
     position: absolute;
     top: 70px;
-    font-size: 40px;
+    font-size: 45px;
 }
 
+/ Frage /
 #question {
     font-size: 60px;
     font-weight: bold;
 }
 
+/ Buttons */
 button {
     font-size: 28px;
     margin: 10px;
     padding: 15px;
+    border-radius: 12px;
 }
 </style>
 
@@ -64,14 +70,17 @@ button {
 
 <body>
 
-<h1>🚜💥 Ninos Rennen 🏁</h1>
+<h1>🚜💥 Ninos Monster Truck Rennen 🏁</h1>
 
+<!-- Menü -->
 <div id="menu">
-    <button onclick="startLevel(1)">Level 1</button>
+    <h2>Wähle Level</h2>
+    <button onclick="startLevel(1)">Level 1 (lernen)</button>
     <button onclick="startLevel(2)">Level 2</button>
     <button onclick="startLevel(3)">Level 3</button>
 </div>
 
+<!-- Spiel -->
 <div id="game" style="display:none;">
 
 <div class="track">
@@ -97,30 +106,35 @@ var enemyPos = 0;
 var level = 1;
 var enemySpeed = 2;
 
-// ✅ STABILER GAME LOOP
+// GAME LOOP (stabil!)
 setInterval(function() {
 
-    enemyPos += enemySpeed;
+    // 👉 Gegner NUR ab Level 2
+    if (level > 1) {
+        enemyPos += enemySpeed;
+        document.getElementById("enemy").style.left = enemyPos + "px";
 
-    document.getElementById("enemy").style.left = enemyPos + "px";
+        if (enemyPos > 300) {
+            document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
+            reset();
+        }
+    }
+
+    // Spieler immer
     document.getElementById("player").style.left = playerPos + "px";
 
     checkItem();
 
-    if (enemyPos > 300) {
-        document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
-        resetGame();
-    }
+}, 100);
 
-}, 100); // läuft 10x pro Sekunde
-
+// Start
 function startLevel(l) {
 
     level = l;
 
-    if (level === 1) enemySpeed = 1.5;
-    if (level === 2) enemySpeed = 2.5;
-    if (level === 3) enemySpeed = 4;
+    if (level === 1) enemySpeed = 0;
+    if (level === 2) enemySpeed = 2;
+    if (level === 3) enemySpeed = 3.5;
 
     playerPos = 0;
     enemyPos = 0;
@@ -128,42 +142,51 @@ function startLevel(l) {
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
 
+    // Gegner verstecken bei Level 1
+    if (level === 1) {
+        document.getElementById("enemy").style.display = "none";
+    } else {
+        document.getElementById("enemy").style.display = "block";
+    }
+
     moveItem();
     newQuestion();
 }
 
+// Item platzieren
 function moveItem() {
-    var pos = Math.random() * 250;
+    var trackWidth = 300;
+    var pos = Math.random() * trackWidth;
     document.getElementById("item").style.left = pos + "px";
 }
 
+// ✅ BESSERER ITEM CHECK
 function checkItem() {
+
     var itemPos = document.getElementById("item").offsetLeft;
 
-    if (Math.abs(playerPos - itemPos) < 30) {
+    // größerer Trefferbereich
+    if (playerPos > itemPos - 20 && playerPos < itemPos + 20) {
         useItem();
         moveItem();
     }
 }
 
+// Item Effekt
 function useItem() {
 
     var r = Math.random();
 
-    if (r < 0.33) {
+    if (r < 0.5) {
         playerPos += 60;
         document.getElementById("feedback").innerText = "🚀 Turbo!";
-    }
-    else if (r < 0.66) {
-        enemySpeed = enemySpeed * 0.5;
-        document.getElementById("feedback").innerText = "🐌 Gegner langsam!";
-    }
-    else {
+    } else {
         playerPos += 100;
         document.getElementById("feedback").innerText = "💥 Mega Boost!";
     }
 }
 
+// Aufgabe
 function newQuestion() {
 
     var max = 5 + level * 5;
@@ -180,7 +203,7 @@ function newQuestion() {
 
     while (answers.length < 4) {
         var wrong = correct + Math.floor(Math.random()*6)-3;
-        if (wrong >= 0 && !answers.includes(wrong)) {
+        if (wrong >= 0 && answers.indexOf(wrong) === -1) {
             answers.push(wrong);
         }
     }
@@ -205,6 +228,7 @@ function newQuestion() {
     }
 }
 
+// Antwort
 function check(v) {
 
     if (v === correct) {
@@ -216,13 +240,14 @@ function check(v) {
 
     if (playerPos > 300) {
         document.getElementById("feedback").innerText = "🏆 Gewonnen!";
-        resetGame();
+        reset();
     }
 
     setTimeout(newQuestion, 800);
 }
 
-function resetGame() {
+// Reset
+function reset() {
     playerPos = 0;
     enemyPos = 0;
     moveItem();
