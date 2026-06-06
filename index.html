@@ -2,28 +2,65 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Spiel</title>
+<title>Ninos Monster Truck Rennen</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: #4facfe;
+    background: linear-gradient(#4facfe, #00f2fe);
     color: white;
+    overflow:hidden;
 }
 
-.hidden { display:none; }
+/* Strecke /
+.track {
+    width: 90%;
+    height: 150px;
+    background: #444;
+    margin: 20px auto;
+    border-radius: 20px;
+    position: relative;
+}
 
+/ Truck /
+.truck {
+    font-size: 60px;
+    position: absolute;
+    left: 0;
+    top: 40px;
+    transition: left 0.4s;
+}
+
+/ Ziel /
+.finish {
+    position:absolute;
+    right:10px;
+    top:50px;
+    font-size:40px;
+}
+
+/ Game Box /
+.game-box {
+    background: rgba(0,0,0,0.4);
+    margin: 20px auto;
+    padding: 20px;
+    width: 320px;
+    border-radius: 20px;
+}
+
+/ Buttons /
 button {
     font-size: 22px;
     margin: 10px;
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
-.truck {
-    font-size: 60px;
-    margin: 20px;
+/ Turbo Effekt */
+.turbo {
+    filter: drop-shadow(0 0 10px yellow);
+    transform: scale(1.2);
 }
 </style>
 
@@ -31,36 +68,24 @@ button {
 
 <body>
 
-<h1>🚚 Ninos Spiel</h1>
+<h1>🚚 Ninos Rennen 🏁</h1>
 
-<div id="map">
-    <h2>Level wählen</h2>
-    <button onclick="startLevel(1)">🌵 Wüste</button>
-    <button onclick="startLevel(2)">🏔️ Berge</button>
-    <button onclick="startLevel(3)">🌋 Vulkan</button>
+<div class="track">
+    <div id="truck" class="truck">🚚</div>
+    <div class="finish">🏁</div>
 </div>
 
-<div id="game" class="hidden">
-    <div class="truck" id="truck">🚚</div>
+<div class="game-box">
     <p id="question"></p>
     <div id="answers"></div>
     <p id="feedback"></p>
-    <button onclick="back()">Zurück</button>
+    <p>🔥 Combo: <span id="combo">0</span></p>
 </div>
 
 <script>
 let correctAnswer = 0;
-
-function startLevel(level) {
-    document.getElementById("map").style.display = "none";
-    document.getElementById("game").style.display = "block";
-    newQuestion();
-}
-
-function back() {
-    document.getElementById("game").style.display = "none";
-    document.getElementById("map").style.display = "block";
-}
+let combo = 0;
+let position = 0;
 
 function newQuestion() {
     let a = Math.floor(Math.random()*10);
@@ -69,37 +94,81 @@ function newQuestion() {
     correctAnswer = a + b;
 
     document.getElementById("question").innerText =
-        a + " + " + b + " = ?";
+        ${a} + ${b} = ?;
 
     let answersSet = new Set();
     answersSet.add(correctAnswer);
 
     while (answersSet.size < 4) {
         let wrong = correctAnswer + Math.floor(Math.random()*6)-3;
-        if (wrong >= 0) {
-            answersSet.add(wrong);
-        }
+        if (wrong >= 0) answersSet.add(wrong);
     }
 
     let answers = Array.from(answersSet).sort(() => Math.random()-0.5);
 
-    let container = document.getElementById("answers");
-    container.innerHTML = "";
+    let box = document.getElementById("answers");
+    box.innerHTML = "";
 
     answers.forEach(value => {
         let btn = document.createElement("button");
         btn.innerText = value;
+
         btn.onclick = function() {
-            if (value === correctAnswer) {
-                document.getElementById("feedback").innerText = "✅ Super Nino!";
-            } else {
-                document.getElementById("feedback").innerText = "❌ Versuch nochmal!";
-            }
-            setTimeout(newQuestion, 1000);
+            checkAnswer(value);
         };
-        container.appendChild(btn);
+
+        box.appendChild(btn);
     });
 }
+
+function checkAnswer(value) {
+
+    let truck = document.getElementById("truck");
+    let feedback = document.getElementById("feedback");
+
+    if (value === correctAnswer) {
+
+        combo++;
+        position += 10;
+
+        feedback.innerText = "✅ Super! Weiterfahren!";
+
+        // Bewegung
+        truck.style.left = position + "%";
+
+        // TURBO BOOST
+        if (combo >= 3) {
+            position += 15;
+            truck.classList.add("turbo");
+
+            feedback.innerText = "🚀 TURBO BOOST!!!";
+
+            setTimeout(() => {
+                truck.classList.remove("turbo");
+            }, 500);
+
+            combo = 0;
+        }
+
+        // Ziel erreicht
+        if (position >= 80) {
+            feedback.innerText = "🏆 Nino gewinnt das Rennen!!!";
+            position = 0;
+            combo = 0;
+        }
+
+    } else {
+        feedback.innerText = "😅 Falsch!";
+        combo = 0;
+    }
+
+    document.getElementById("combo").innerText = combo;
+
+    setTimeout(newQuestion, 1000);
+}
+
+// Start
+newQuestion();
 </script>
 
 </body>
