@@ -2,71 +2,28 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Abenteuer</title>
+<title>Ninos Monster Truck Spiel</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: linear-gradient(#4facfe, #00f2fe);
+    background: #4facfe;
     color: white;
 }
 
-/* Map /
-.map button {
-    margin: 10px;
-    padding: 20px;
+.hidden { display:none; }
+
+button {
     font-size: 22px;
-    border-radius: 12px;
-    border: none;
-    background: orange;
-    color: white;
-}
-
-/ Verstecken /
-.hidden {
-    display: none;
-}
-
-/ Spielbereich /
-.game-box {
-    background: rgba(0,0,0,0.4);
-    margin: 20px auto;
-    padding: 20px;
-    width: 300px;
-    border-radius: 20px;
-}
-
-/ Truck /
-.truck {
-    font-size: 70px;
-    transition: transform 0.3s;
-}
-
-/ Animation /
-.jump {
-    transform: translateY(-30px);
-}
-
-/ Antwort Buttons /
-button.answer {
-    font-size: 24px;
     margin: 10px;
     padding: 15px;
-    width: 90px;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
-/ Sterne Animation */
-.star {
-    position: absolute;
-    font-size: 30px;
-    animation: fly 1s forwards;
-}
-
-@keyframes fly {
-    0% { transform: translateY(0); opacity:1; }
-    100% { transform: translateY(-150px); opacity:0; }
+.truck {
+    font-size: 60px;
+    margin: 20px;
 }
 </style>
 
@@ -74,127 +31,67 @@ button.answer {
 
 <body>
 
-<h1>🚚 Ninos Monster Truck Abenteuer 🏁</h1>
+<h1>🚚 Ninos Spiel</h1>
 
-<!-- LEVEL MAP -->
 <div id="map">
-    <h2>Wähle dein Level, Nino!</h2>
-    <div class="map">
-        <button onclick="startLevel(1)">🌵 Wüste (leicht)</button>
-        <button onclick="startLevel(2)">🏔️ Berge (mittel)</button>
-        <button onclick="startLevel(3)">🌋 Vulkan (schwer)</button>
-    </div>
+    <h2>Level wählen</h2>
+    <button onclick="startLevel(1)">Level 1</button>
+    <button onclick="startLevel(2)">Level 2</button>
 </div>
 
-<!-- GAME -->
 <div id="game" class="hidden">
-
-    <div class="truck" id="truck">🚚</div>
-
-    <div class="game-box">
-        <p id="question"></p>
-        <div id="answers"></div>
-        <p id="feedback"></p>
-        <p>⭐ Sterne: <span id="stars">0</span></p>
-    </div>
-
-    <button onclick="backToMap()">⬅ Zurück zur Karte</button>
+    <div class="truck">🚚</div>
+    <p id="question"></p>
+    <div id="answers"></div>
+    <p id="feedback"></p>
+    <button onclick="back()">Zurück</button>
 </div>
 
 <script>
-let level = 1;
-let stars = 0;
-let correctAnswer = 0;
+let correct = 0;
 
 function startLevel(l) {
-    level = l;
-    stars = 0;
-
-    document.getElementById("map").classList.add("hidden");
-    document.getElementById("game").classList.remove("hidden");
-
+    document.getElementById("map").style.display = "none";
+    document.getElementById("game").style.display = "block";
     newQuestion();
 }
 
-function backToMap() {
-    document.getElementById("game").classList.add("hidden");
-    document.getElementById("map").classList.remove("hidden");
+function back() {
+    document.getElementById("game").style.display = "none";
+    document.getElementById("map").style.display = "block";
 }
 
 function newQuestion() {
-    let max = 5 * level;
+    let a = Math.floor(Math.random()*5);
+    let b = Math.floor(Math.random()*5);
+    correct = a + b;
 
-    let a = Math.floor(Math.random() * max);
-    let b = Math.floor(Math.random() * max);
+    document.getElementById("question").innerText = a + " + " + b;
 
-    correctAnswer = a + b;
+    let answers = document.getElementById("answers");
+    answers.innerHTML = "";
 
-    document.getElementById("question").innerText =
-        Nino, wie viel ist ${a} + ${b}?;
-
-    let answers = [correctAnswer];
-
-    while (answers.length < 3) {
-        let wrong = correctAnswer + Math.floor(Math.random()*5) - 2;
-        if (wrong >= 0 && !answers.includes(wrong)) {
-            answers.push(wrong);
+    for(let i=0;i<3;i++) {
+        let value;
+        if(i===0) {
+            value = correct;
+        } else {
+            value = correct + Math.floor(Math.random()*3)-1;
         }
-    }
 
-    answers.sort(() => Math.random() - 0.5);
-
-    let container = document.getElementById("answers");
-    container.innerHTML = "";
-
-    answers.forEach(a => {
         let btn = document.createElement("button");
-        btn.className = "answer";
-        btn.innerText = a;
-        btn.onclick = () => checkAnswer(a);
-        container.appendChild(btn);
-    });
-}
+        btn.innerText = value;
+        btn.onclick = function() {
+            if(value === correct) {
+                document.getElementById("feedback").innerText = "✅ Super!";
+            } else {
+                document.getElementById("feedback").innerText = "❌ Versuch nochmal!";
+            }
+            setTimeout(newQuestion,1000);
+        };
 
-function checkAnswer(answer) {
-
-    let feedback = document.getElementById("feedback");
-    let truck = document.getElementById("truck");
-
-    if (answer === correctAnswer) {
-
-        stars++;
-        feedback.innerText = "🎉 SUPER Nino!!!";
-
-        // Truck springt
-        truck.classList.add("jump");
-        setTimeout(() => truck.classList.remove("jump"), 300);
-
-        createStar();
-
-        if (stars >= 5) {
-            feedback.innerText = "🏆 LEVEL GESCHAFFT!";
-        }
-
-    } else {
-        feedback.innerText = "😅 Fast – nochmal probieren!";
+        answers.appendChild(btn);
     }
-
-    document.getElementById("stars").innerText = stars;
-
-    setTimeout(newQuestion, 1200);
-}
-
-function createStar() {
-    let star = document.createElement("div");
-    star.innerText = "⭐";
-    star.classList.add("star");
-
-    star.style.left = Math.random() * window.innerWidth + "px";
-    star.style.top = "300px";
-
-    document.body.appendChild(star);
-
-    setTimeout(() => star.remove(), 1000);
 }
 </script>
 
