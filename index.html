@@ -2,65 +2,45 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Rennen</title>
+<title>Ninos Rennen</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: linear-gradient(#4facfe, #00f2fe);
+    background: #4facfe;
     color: white;
-    overflow:hidden;
 }
 
-/* Strecke /
 .track {
     width: 90%;
-    height: 150px;
+    height: 120px;
     background: #444;
     margin: 20px auto;
     border-radius: 20px;
     position: relative;
 }
 
-/ Truck /
 .truck {
-    font-size: 60px;
     position: absolute;
     left: 0;
-    top: 40px;
-    transition: left 0.4s;
+    top: 30px;
+    font-size: 60px;
+    transition: left 0.3s;
 }
 
-/ Ziel /
 .finish {
-    position:absolute;
-    right:10px;
-    top:50px;
-    font-size:40px;
+    position: absolute;
+    right: 10px;
+    top: 30px;
+    font-size: 40px;
 }
 
-/ Game Box /
-.game-box {
-    background: rgba(0,0,0,0.4);
-    margin: 20px auto;
-    padding: 20px;
-    width: 320px;
-    border-radius: 20px;
-}
-
-/ Buttons /
 button {
     font-size: 22px;
     margin: 10px;
     padding: 15px;
-    border-radius: 12px;
-}
-
-/ Turbo Effekt */
-.turbo {
-    filter: drop-shadow(0 0 10px yellow);
-    transform: scale(1.2);
+    border-radius: 10px;
 }
 </style>
 
@@ -75,100 +55,106 @@ button {
     <div class="finish">🏁</div>
 </div>
 
-<div class="game-box">
-    <p id="question"></p>
-    <div id="answers"></div>
-    <p id="feedback"></p>
-    <p>🔥 Combo: <span id="combo">0</span></p>
-</div>
+<p id="question">Lade...</p>
+<div id="answers"></div>
+<p id="feedback"></p>
+<p>🔥 Combo: <span id="combo">0</span></p>
 
 <script>
+
 let correctAnswer = 0;
 let combo = 0;
 let position = 0;
 
-function newQuestion() {
-    let a = Math.floor(Math.random()*10);
-    let b = Math.floor(Math.random()*10);
-
-    correctAnswer = a + b;
-
+// FEHLER-INFO (falls etwas schiefgeht)
+window.onerror = function(msg) {
     document.getElementById("question").innerText =
-        ${a} + ${b} = ?;
+        "⚠️ Fehler im Code!";
+};
 
-    let answersSet = new Set();
-    answersSet.add(correctAnswer);
+function newQuestion() {
+    try {
 
-    while (answersSet.size < 4) {
-        let wrong = correctAnswer + Math.floor(Math.random()*6)-3;
-        if (wrong >= 0) answersSet.add(wrong);
+        let a = Math.floor(Math.random() * 10);
+        let b = Math.floor(Math.random() * 10);
+
+        correctAnswer = a + b;
+
+        document.getElementById("question").innerText =
+            a + " + " + b + " = ?";
+
+        let answers = [];
+        answers.push(correctAnswer);
+
+        while (answers.length < 4) {
+            let wrong = correctAnswer + Math.floor(Math.random()*6) - 3;
+            if (wrong >= 0 && !answers.includes(wrong)) {
+                answers.push(wrong);
+            }
+        }
+
+        // mischen
+        answers.sort(() => Math.random() - 0.5);
+
+        let container = document.getElementById("answers");
+        container.innerHTML = "";
+
+        answers.forEach(function(value) {
+
+            let btn = document.createElement("button");
+            btn.innerText = value;
+
+            btn.onclick = function() {
+                checkAnswer(value);
+            };
+
+            container.appendChild(btn);
+        });
+
+    } catch(e) {
+        document.getElementById("question").innerText =
+            "⚠️ Fehler beim Laden!";
     }
-
-    let answers = Array.from(answersSet).sort(() => Math.random()-0.5);
-
-    let box = document.getElementById("answers");
-    box.innerHTML = "";
-
-    answers.forEach(value => {
-        let btn = document.createElement("button");
-        btn.innerText = value;
-
-        btn.onclick = function() {
-            checkAnswer(value);
-        };
-
-        box.appendChild(btn);
-    });
 }
 
 function checkAnswer(value) {
 
     let truck = document.getElementById("truck");
-    let feedback = document.getElementById("feedback");
 
     if (value === correctAnswer) {
 
         combo++;
         position += 10;
 
-        feedback.innerText = "✅ Super! Weiterfahren!";
+        document.getElementById("feedback").innerText = "✅ Richtig!";
 
-        // Bewegung
         truck.style.left = position + "%";
 
-        // TURBO BOOST
+        // TURBO
         if (combo >= 3) {
             position += 15;
-            truck.classList.add("turbo");
-
-            feedback.innerText = "🚀 TURBO BOOST!!!";
-
-            setTimeout(() => {
-                truck.classList.remove("turbo");
-            }, 500);
-
+            document.getElementById("feedback").innerText = "🚀 TURBO!";
             combo = 0;
         }
 
-        // Ziel erreicht
+        // Ziel
         if (position >= 80) {
-            feedback.innerText = "🏆 Nino gewinnt das Rennen!!!";
+            document.getElementById("feedback").innerText = "🏆 Gewonnen!";
             position = 0;
-            combo = 0;
         }
 
     } else {
-        feedback.innerText = "😅 Falsch!";
         combo = 0;
+        document.getElementById("feedback").innerText = "❌ Falsch!";
     }
 
     document.getElementById("combo").innerText = combo;
 
-    setTimeout(newQuestion, 1000);
+    setTimeout(newQuestion, 800);
 }
 
-// Start
 newQuestion();
+
 </script>
 
 </body>
