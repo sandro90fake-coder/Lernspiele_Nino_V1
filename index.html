@@ -2,45 +2,64 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Rennen</title>
+<title>Ninos Monster Truck Rennen</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: #4facfe;
+    background: linear-gradient(#4facfe, #00f2fe);
     color: white;
 }
 
+/* Strecke /
 .track {
     width: 90%;
-    height: 120px;
+    height: 160px;
     background: #444;
     margin: 20px auto;
     border-radius: 20px;
     position: relative;
 }
 
-.truck {
+/ Spieler Truck /
+.player {
     position: absolute;
     left: 0;
-    top: 30px;
+    top: 20px;
+    font-size: 70px;
+    transition: left 0.3s;
+}
+
+/ Gegner /
+.enemy {
+    position: absolute;
+    left: 0;
+    top: 90px;
     font-size: 60px;
     transition: left 0.3s;
 }
 
+/ Ziel /
 .finish {
-    position: absolute;
-    right: 10px;
-    top: 30px;
-    font-size: 40px;
+    position:absolute;
+    right:10px;
+    top:50px;
+    font-size:40px;
 }
 
+/ UI /
 button {
     font-size: 22px;
-    margin: 10px;
-    padding: 15px;
-    border-radius: 10px;
+    margin: 8px;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+/ Turbo Effekt */
+.turbo {
+    transform: scale(1.3);
+    filter: drop-shadow(0 0 10px yellow);
 }
 </style>
 
@@ -48,10 +67,11 @@ button {
 
 <body>
 
-<h1>🚚 Ninos Rennen 🏁</h1>
+<h1>🚜💥 Ninos Monster Truck Rennen 🏁</h1>
 
 <div class="track">
-    <div id="truck" class="truck">🚚</div>
+    <div id="player" class="player">🚜</div>
+    <div id="enemy" class="enemy">🚗</div>
     <div class="finish">🏁</div>
 </div>
 
@@ -64,93 +84,111 @@ button {
 
 let correctAnswer = 0;
 let combo = 0;
-let position = 0;
 
-// FEHLER-INFO (falls etwas schiefgeht)
-window.onerror = function(msg) {
-    document.getElementById("question").innerText =
-        "⚠️ Fehler im Code!";
-};
+let playerPos = 0;
+let enemyPos = 0;
+
+// Gegner fährt automatisch
+setInterval(() => {
+    enemyPos += Math.random() * 3; // langsamer als Spieler
+
+    document.getElementById("enemy").style.left = enemyPos + "%";
+
+    // Gegner gewinnt
+    if (enemyPos >= 80) {
+        document.getElementById("feedback").innerText =
+            "😱 Der Gegner hat gewonnen! Noch mal!";
+        resetGame();
+    }
+
+}, 800);
 
 function newQuestion() {
-    try {
 
-        let a = Math.floor(Math.random() * 10);
-        let b = Math.floor(Math.random() * 10);
+    let a = Math.floor(Math.random()*10);
+    let b = Math.floor(Math.random()*10);
 
-        correctAnswer = a + b;
+    correctAnswer = a + b;
 
-        document.getElementById("question").innerText =
-            a + " + " + b + " = ?";
+    document.getElementById("question").innerText =
+        ${a} + ${b} = ?;
 
-        let answers = [];
-        answers.push(correctAnswer);
+    let answers = [];
+    answers.push(correctAnswer);
 
-        while (answers.length < 4) {
-            let wrong = correctAnswer + Math.floor(Math.random()*6) - 3;
-            if (wrong >= 0 && !answers.includes(wrong)) {
-                answers.push(wrong);
-            }
+    while (answers.length < 4) {
+        let wrong = correctAnswer + Math.floor(Math.random()*6)-3;
+        if (wrong >= 0 && !answers.includes(wrong)) {
+            answers.push(wrong);
         }
-
-        // mischen
-        answers.sort(() => Math.random() - 0.5);
-
-        let container = document.getElementById("answers");
-        container.innerHTML = "";
-
-        answers.forEach(function(value) {
-
-            let btn = document.createElement("button");
-            btn.innerText = value;
-
-            btn.onclick = function() {
-                checkAnswer(value);
-            };
-
-            container.appendChild(btn);
-        });
-
-    } catch(e) {
-        document.getElementById("question").innerText =
-            "⚠️ Fehler beim Laden!";
     }
+
+    answers.sort(() => Math.random()-0.5);
+
+    let container = document.getElementById("answers");
+    container.innerHTML = "";
+
+    answers.forEach(value => {
+        let btn = document.createElement("button");
+        btn.innerText = value;
+        btn.onclick = function() {
+            checkAnswer(value);
+        };
+        container.appendChild(btn);
+    });
 }
 
 function checkAnswer(value) {
 
-    let truck = document.getElementById("truck");
+    let player = document.getElementById("player");
 
     if (value === correctAnswer) {
 
         combo++;
-        position += 10;
+        playerPos += 8;
 
-        document.getElementById("feedback").innerText = "✅ Richtig!";
+        document.getElementById("feedback").innerText = "✅ Super Nino!";
 
-        truck.style.left = position + "%";
+        player.style.left = playerPos + "%";
 
         // TURBO
         if (combo >= 3) {
-            position += 15;
-            document.getElementById("feedback").innerText = "🚀 TURBO!";
+            playerPos += 15;
+            document.getElementById("feedback").innerText = "🚀 TURBO BOOST!";
+            
+            player.classList.add("turbo");
+
+            setTimeout(() => {
+                player.classList.remove("turbo");
+            }, 500);
+
             combo = 0;
         }
 
-        // Ziel
-        if (position >= 80) {
-            document.getElementById("feedback").innerText = "🏆 Gewonnen!";
-            position = 0;
+        // Spieler gewinnt
+        if (playerPos >= 80) {
+            document.getElementById("feedback").innerText =
+                "🏆 NINO GEWINNT!!! 🚜💥";
+            resetGame();
         }
 
     } else {
         combo = 0;
-        document.getElementById("feedback").innerText = "❌ Falsch!";
+        document.getElementById("feedback").innerText = "😅 Falsch!";
     }
 
     document.getElementById("combo").innerText = combo;
 
     setTimeout(newQuestion, 800);
+}
+
+function resetGame() {
+    playerPos = 0;
+    enemyPos = 0;
+    combo = 0;
+
+    document.getElementById("player").style.left = "0%";
+    document.getElementById("enemy").style.left = "0%";
 }
 
 newQuestion();
