@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Level Rennen</title>
+<title>Ninos Mario Kart Monster Truck</title>
 
 <style>
 body {
@@ -22,6 +22,7 @@ body {
     position: relative;
 }
 
+/ Trucks /
 .player {
     position: absolute;
     left: 0px;
@@ -36,6 +37,7 @@ body {
     font-size: 50px;
 }
 
+/ Ziel /
 .finish {
     position: absolute;
     right: 10px;
@@ -43,38 +45,40 @@ body {
     font-size: 30px;
 }
 
-/ Buttons /
+/ Item Box /
+.item {
+    position: absolute;
+    top: 60px;
+    font-size: 35px;
+}
+
+/ UI */
 button {
     font-size: 22px;
     margin: 8px;
     padding: 12px;
 }
-
-/ Map */
-.hidden {
-    display:none;
-}
 </style>
+
 </head>
 
 <body>
 
-<h1>🚜 Ninos Monster Truck Rennen 🏁</h1>
+<h1>🚜💥 Ninos Mario Kart Rennen 🏁</h1>
 
-<!-- LEVEL AUSWAHL -->
+<!-- LEVEL -->
 <div id="menu">
-    <h2>Wähle ein Level</h2>
-    <button onclick="startLevel(1)">Level 1 (leicht)</button>
-    <button onclick="startLevel(2)">Level 2 (mittel)</button>
-    <button onclick="startLevel(3)">Level 3 (schwer)</button>
+    <button onclick="startLevel(1)">Level 1</button>
+    <button onclick="startLevel(2)">Level 2</button>
+    <button onclick="startLevel(3)">Level 3</button>
 </div>
 
-<!-- GAME -->
-<div id="game" class="hidden">
+<div id="game" style="display:none;">
 
 <div class="track">
     <div id="player" class="player">🚜</div>
     <div id="enemy" class="enemy">🚗</div>
+    <div id="item" class="item">🎁</div>
     <div class="finish">🏁</div>
 </div>
 
@@ -83,7 +87,7 @@ button {
 <p id="feedback"></p>
 <p>🔥 Combo: <span id="combo">0</span></p>
 
-<button onclick="backToMenu()">⬅ Menü</button>
+<button onclick="back()">⬅ Menü</button>
 
 </div>
 
@@ -96,11 +100,10 @@ var combo = 0;
 var level = 1;
 var enemySpeed = 2;
 
-// LEVEL START
+// START LEVEL
 function startLevel(l) {
     level = l;
 
-    // Schwierigkeit
     if (level === 1) enemySpeed = 1.5;
     if (level === 2) enemySpeed = 2.5;
     if (level === 3) enemySpeed = 3.5;
@@ -109,45 +112,91 @@ function startLevel(l) {
     enemyPos = 0;
     combo = 0;
 
-    document.getElementById("menu").classList.add("hidden");
-    document.getElementById("game").classList.remove("hidden");
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("game").style.display = "block";
 
+    moveItem(); // neues Item platzieren
     updatePositions();
     newQuestion();
 }
 
-// Zurück
-function backToMenu() {
-    document.getElementById("game").classList.add("hidden");
-    document.getElementById("menu").classList.remove("hidden");
+// Menü
+function back() {
+    document.getElementById("game").style.display = "none";
+    document.getElementById("menu").style.display = "block";
 }
 
 // Gegner Bewegung
-function moveEnemy() {
+setInterval(function() {
     enemyPos += enemySpeed;
-
     updatePositions();
 
     if (enemyPos >= 300) {
         document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
-        resetGame();
+        reset();
     }
-}
+}, 800);
 
-setInterval(moveEnemy, 800);
+// Item positionieren
+function moveItem() {
+    var randomPos = Math.random() * 250;
+    document.getElementById("item").style.left = randomPos + "px";
+}
 
 // Position anwenden
 function updatePositions() {
     document.getElementById("player").style.left = playerPos + "px";
     document.getElementById("enemy").style.left = enemyPos + "px";
+
+    checkItemCollision();
+}
+
+// Item prüfen
+function checkItemCollision() {
+    var item = document.getElementById("item");
+
+    var itemPos = item.offsetLeft;
+
+    // Spieler sammelt Item
+    if (Math.abs(playerPos - itemPos) < 20) {
+        useItem();
+        moveItem();
+    }
+}
+
+// ITEM SYSTEM
+function useItem() {
+
+    var r = Math.random();
+
+    // 🚀 TURBO
+    if (r < 0.33) {
+        playerPos += 50;
+        document.getElementById("feedback").innerText = "🚀 TURBO ITEM!";
+    }
+
+    // 🐌 Gegner langsamer
+    else if (r < 0.66) {
+        enemySpeed = 1;
+        document.getElementById("feedback").innerText = "🐌 Gegner langsam!";
+    }
+
+    // 💥 SUPER BOOST
+    else {
+        playerPos += 80;
+        document.getElementById("feedback").innerText = "💥 MEGA BOOST!";
+    }
+
+    updatePositions();
 }
 
 // Aufgabe
 function newQuestion() {
+
     var max = 5 + level * 5;
 
-    var a = Math.floor(Math.random() * max);
-    var b = Math.floor(Math.random() * max);
+    var a = Math.floor(Math.random()*max);
+    var b = Math.floor(Math.random()*max);
 
     correct = a + b;
 
@@ -183,7 +232,7 @@ function newQuestion() {
     }
 }
 
-// Antwort prüfen
+// Antwort
 function check(value) {
 
     if (value === correct) {
@@ -193,17 +242,15 @@ function check(value) {
 
         document.getElementById("feedback").innerText = "✅ Richtig!";
 
-        // Turbo
         if (combo >= 3) {
             playerPos += 50;
             document.getElementById("feedback").innerText = "🚀 TURBO!";
             combo = 0;
         }
 
-        // Sieg
         if (playerPos >= 300) {
             document.getElementById("feedback").innerText = "🏆 Nino gewinnt!";
-            resetGame();
+            reset();
         }
 
     } else {
@@ -219,10 +266,11 @@ function check(value) {
 }
 
 // Reset
-function resetGame() {
+function reset() {
     playerPos = 0;
     enemyPos = 0;
     combo = 0;
+    moveItem();
 
     updatePositions();
 }
