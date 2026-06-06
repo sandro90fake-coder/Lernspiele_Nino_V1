@@ -12,6 +12,7 @@ body {
     color: white;
 }
 
+/* Strecke */
 .track {
     width: 90%;
     height: 180px;
@@ -21,7 +22,6 @@ body {
     position: relative;
 }
 
-/* Trucks /
 .player {
     position: absolute;
     left: 0px;
@@ -36,7 +36,6 @@ body {
     font-size: 70px;
 }
 
-/ Ziel /
 .finish {
     position: absolute;
     right: 10px;
@@ -44,20 +43,17 @@ body {
     font-size: 40px;
 }
 
-/ Item /
 .item {
     position: absolute;
     top: 70px;
     font-size: 45px;
 }
 
-/ Frage /
 #question {
     font-size: 60px;
     font-weight: bold;
 }
 
-/ Buttons */
 button {
     font-size: 28px;
     margin: 10px;
@@ -70,14 +66,14 @@ button {
 
 <body>
 
-<h1>🚜💥 Ninos Monster Truck Rennen 🏁</h1>
+<h1>🚜💥 Ninos Monster Truck Spiel</h1>
 
 <!-- Menü -->
 <div id="menu">
     <h2>Wähle Level</h2>
-    <button onclick="startLevel(1)">Level 1 (lernen)</button>
-    <button onclick="startLevel(2)">Level 2</button>
-    <button onclick="startLevel(3)">Level 3</button>
+    <button onclick="startLevel(1)">⭐ Level 1 (lernen)</button>
+    <button onclick="startLevel(2)">🏁 Level 2</button>
+    <button onclick="startLevel(3)">🏁 Level 3</button>
 </div>
 
 <!-- Spiel -->
@@ -94,6 +90,8 @@ button {
 <div id="answers"></div>
 <p id="feedback"></p>
 
+<p id="stars">⭐ Sterne: 0</p>
+
 <button onclick="location.reload()">⬅ Menü</button>
 
 </div>
@@ -105,11 +103,11 @@ var playerPos = 0;
 var enemyPos = 0;
 var level = 1;
 var enemySpeed = 2;
+var stars = 0;
 
-// GAME LOOP (stabil!)
+// GAME LOOP
 setInterval(function() {
 
-    // 👉 Gegner NUR ab Level 2
     if (level > 1) {
         enemyPos += enemySpeed;
         document.getElementById("enemy").style.left = enemyPos + "px";
@@ -120,17 +118,16 @@ setInterval(function() {
         }
     }
 
-    // Spieler immer
     document.getElementById("player").style.left = playerPos + "px";
 
     checkItem();
 
 }, 100);
 
-// Start
 function startLevel(l) {
 
     level = l;
+    stars = 0;
 
     if (level === 1) enemySpeed = 0;
     if (level === 2) enemySpeed = 2;
@@ -142,51 +139,33 @@ function startLevel(l) {
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
 
-    // Gegner verstecken bei Level 1
     if (level === 1) {
         document.getElementById("enemy").style.display = "none";
+        document.getElementById("stars").style.display = "block";
     } else {
         document.getElementById("enemy").style.display = "block";
+        document.getElementById("stars").style.display = "none";
     }
 
     moveItem();
     newQuestion();
 }
 
-// Item platzieren
 function moveItem() {
-    var trackWidth = 300;
-    var pos = Math.random() * trackWidth;
+    var pos = Math.random() * 250;
     document.getElementById("item").style.left = pos + "px";
 }
 
-// ✅ BESSERER ITEM CHECK
 function checkItem() {
-
     var itemPos = document.getElementById("item").offsetLeft;
 
-    // größerer Trefferbereich
     if (playerPos > itemPos - 20 && playerPos < itemPos + 20) {
-        useItem();
+        playerPos += 40;
+        document.getElementById("feedback").innerText = "🎁 Bonus!";
         moveItem();
     }
 }
 
-// Item Effekt
-function useItem() {
-
-    var r = Math.random();
-
-    if (r < 0.5) {
-        playerPos += 60;
-        document.getElementById("feedback").innerText = "🚀 Turbo!";
-    } else {
-        playerPos += 100;
-        document.getElementById("feedback").innerText = "💥 Mega Boost!";
-    }
-}
-
-// Aufgabe
 function newQuestion() {
 
     var max = 5 + level * 5;
@@ -214,7 +193,6 @@ function newQuestion() {
     box.innerHTML = "";
 
     for (var i=0;i<answers.length;i++) {
-
         var btn = document.createElement("button");
         btn.innerText = answers[i];
 
@@ -228,28 +206,48 @@ function newQuestion() {
     }
 }
 
-// Antwort
 function check(v) {
 
     if (v === correct) {
-        playerPos += 30;
-        document.getElementById("feedback").innerText = "🎉 Super Nino!";
+
+        if (level === 1) {
+            stars++;
+            document.getElementById("stars").innerText =
+                "⭐ Sterne: " + stars;
+
+            document.getElementById("feedback").innerText =
+                "🎉 Super Nino!";
+
+            if (stars >= 5) {
+                document.getElementById("feedback").innerText =
+                    "🏆 LEVEL GESCHAFFT!!!";
+                stars = 0;
+            }
+
+        } else {
+            playerPos += 30;
+            document.getElementById("feedback").innerText =
+                "✅ Richtig!";
+        }
+
     } else {
-        document.getElementById("feedback").innerText = "😅 Versuch nochmal!";
+        document.getElementById("feedback").innerText =
+            "😅 Versuch nochmal!";
     }
 
     if (playerPos > 300) {
-        document.getElementById("feedback").innerText = "🏆 Gewonnen!";
+        document.getElementById("feedback").innerText =
+            "🏆 Gewonnen!";
         reset();
     }
 
     setTimeout(newQuestion, 800);
 }
 
-// Reset
 function reset() {
     playerPos = 0;
     enemyPos = 0;
+    stars = 0;
     moveItem();
 }
 
