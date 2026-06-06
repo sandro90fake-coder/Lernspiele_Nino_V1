@@ -8,11 +8,11 @@
 body {
     font-family: Arial;
     text-align: center;
-    background: #4facfe;
+    background: linear-gradient(#4facfe, #00f2fe);
     color: white;
+    overflow:hidden;
 }
 
-/* Strecke */
 .track {
     width: 90%;
     height: 180px;
@@ -29,13 +29,6 @@ body {
     font-size: 80px;
 }
 
-.enemy {
-    position: absolute;
-    left: 0px;
-    top: 100px;
-    font-size: 70px;
-}
-
 .finish {
     position: absolute;
     right: 10px;
@@ -43,22 +36,41 @@ body {
     font-size: 40px;
 }
 
-.item {
-    position: absolute;
-    top: 70px;
-    font-size: 45px;
-}
-
 #question {
     font-size: 60px;
     font-weight: bold;
 }
 
+/* Buttons /
 button {
     font-size: 28px;
     margin: 10px;
     padding: 15px;
     border-radius: 12px;
+    background: orange;
+    border: none;
+    color: white;
+}
+
+button:hover {
+    background: red;
+}
+
+/ Sterne /
+#stars {
+    font-size: 30px;
+}
+
+/ Konfetti */
+.confetti {
+    position: absolute;
+    font-size: 25px;
+    animation: fall 2s linear forwards;
+}
+
+@keyframes fall {
+    0% { transform: translateY(-50px); }
+    100% { transform: translateY(500px); }
 }
 </style>
 
@@ -66,30 +78,23 @@ button {
 
 <body>
 
-<h1>🚜💥 Ninos Monster Truck Spiel</h1>
+<h1>🚜💥 Ninos Lern-Spiel ⭐</h1>
 
-<!-- Menü -->
 <div id="menu">
-    <h2>Wähle Level</h2>
-    <button onclick="startLevel(1)">⭐ Level 1 (lernen)</button>
-    <button onclick="startLevel(2)">🏁 Level 2</button>
-    <button onclick="startLevel(3)">🏁 Level 3</button>
+    <button onclick="startLevel()">⭐ Level 1 starten</button>
 </div>
 
-<!-- Spiel -->
 <div id="game" style="display:none;">
 
 <div class="track">
     <div id="player" class="player">🚜</div>
-    <div id="enemy" class="enemy">🚗</div>
-    <div id="item" class="item">🎁</div>
     <div class="finish">🏁</div>
 </div>
 
 <p id="question"></p>
 <div id="answers"></div>
-<p id="feedback"></p>
 
+<p id="feedback"></p>
 <p id="stars">⭐ Sterne: 0</p>
 
 <button onclick="location.reload()">⬅ Menü</button>
@@ -99,79 +104,20 @@ button {
 <script>
 
 var correct = 0;
-var playerPos = 0;
-var enemyPos = 0;
-var level = 1;
-var enemySpeed = 2;
 var stars = 0;
 
-// GAME LOOP
-setInterval(function() {
-
-    if (level > 1) {
-        enemyPos += enemySpeed;
-        document.getElementById("enemy").style.left = enemyPos + "px";
-
-        if (enemyPos > 300) {
-            document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
-            reset();
-        }
-    }
-
-    document.getElementById("player").style.left = playerPos + "px";
-
-    checkItem();
-
-}, 100);
-
-function startLevel(l) {
-
-    level = l;
-    stars = 0;
-
-    if (level === 1) enemySpeed = 0;
-    if (level === 2) enemySpeed = 2;
-    if (level === 3) enemySpeed = 3.5;
-
-    playerPos = 0;
-    enemyPos = 0;
-
+// Start
+function startLevel() {
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
-
-    if (level === 1) {
-        document.getElementById("enemy").style.display = "none";
-        document.getElementById("stars").style.display = "block";
-    } else {
-        document.getElementById("enemy").style.display = "block";
-        document.getElementById("stars").style.display = "none";
-    }
-
-    moveItem();
     newQuestion();
 }
 
-function moveItem() {
-    var pos = Math.random() * 250;
-    document.getElementById("item").style.left = pos + "px";
-}
-
-function checkItem() {
-    var itemPos = document.getElementById("item").offsetLeft;
-
-    if (playerPos > itemPos - 20 && playerPos < itemPos + 20) {
-        playerPos += 40;
-        document.getElementById("feedback").innerText = "🎁 Bonus!";
-        moveItem();
-    }
-}
-
+// Aufgabe
 function newQuestion() {
 
-    var max = 5 + level * 5;
-
-    var a = Math.floor(Math.random()*max);
-    var b = Math.floor(Math.random()*max);
+    var a = Math.floor(Math.random()*10);
+    var b = Math.floor(Math.random()*10);
 
     correct = a + b;
 
@@ -182,7 +128,7 @@ function newQuestion() {
 
     while (answers.length < 4) {
         var wrong = correct + Math.floor(Math.random()*6)-3;
-        if (wrong >= 0 && answers.indexOf(wrong) === -1) {
+        if (wrong >= 0 && !answers.includes(wrong)) {
             answers.push(wrong);
         }
     }
@@ -192,7 +138,7 @@ function newQuestion() {
     var box = document.getElementById("answers");
     box.innerHTML = "";
 
-    for (var i=0;i<answers.length;i++) {
+    for (var i = 0; i < answers.length; i++) {
         var btn = document.createElement("button");
         btn.innerText = answers[i];
 
@@ -206,49 +152,66 @@ function newQuestion() {
     }
 }
 
+// Antwort prüfen
 function check(v) {
 
     if (v === correct) {
 
-        if (level === 1) {
+        // ⭐ normaler Stern
+        stars++;
+
+        // 🎁 Bonus Zufall
+        if (Math.random() < 0.3) {
             stars++;
-            document.getElementById("stars").innerText =
-                "⭐ Sterne: " + stars;
-
             document.getElementById("feedback").innerText =
-                "🎉 Super Nino!";
-
-            if (stars >= 5) {
-                document.getElementById("feedback").innerText =
-                    "🏆 LEVEL GESCHAFFT!!!";
-                stars = 0;
-            }
-
+                "🎁 BONUS Stern!!!";
         } else {
-            playerPos += 30;
+
+            // zufällige Kinder-Nachrichten
+            var texts = ["🎉 SUPER!", "🚀 WOW!", "💥 MEGA!", "👏 TOLL Nino!"];
+            var t = texts[Math.floor(Math.random()*texts.length)];
+
+            document.getElementById("feedback").innerText = t;
+        }
+
+        document.getElementById("stars").innerText =
+            "⭐ Sterne: " + stars;
+
+        // 🎊 Konfetti
+        createConfetti();
+
+        // 🏆 Level geschafft
+        if (stars >= 5) {
             document.getElementById("feedback").innerText =
-                "✅ Richtig!";
+                "🏆 DU BIST EIN CHAMPION!!!";
+            stars = 0;
         }
 
     } else {
+
         document.getElementById("feedback").innerText =
             "😅 Versuch nochmal!";
-    }
-
-    if (playerPos > 300) {
-        document.getElementById("feedback").innerText =
-            "🏆 Gewonnen!";
-        reset();
     }
 
     setTimeout(newQuestion, 800);
 }
 
-function reset() {
-    playerPos = 0;
-    enemyPos = 0;
-    stars = 0;
-    moveItem();
+// 🎊 Konfetti Funktion
+function createConfetti() {
+
+    for (var i=0; i<10; i++) {
+        var el = document.createElement("div");
+        el.innerText = "🎈";
+        el.className = "confetti";
+
+        el.style.left = Math.random()*window.innerWidth + "px";
+
+        document.body.appendChild(el);
+
+        setTimeout(function(e){
+            e.remove();
+        }, 2000, el);
+    }
 }
 
 </script>
