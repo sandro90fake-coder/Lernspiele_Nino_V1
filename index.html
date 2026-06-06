@@ -2,13 +2,13 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Spiel</title>
+<title>Ninos Monster Truck Rennen</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: linear-gradient(#4facfe, #00f2fe);
+    background: #4facfe;
     color: white;
 }
 
@@ -22,7 +22,7 @@ body {
     position: relative;
 }
 
-/ Trucks /
+/ Fahrzeuge /
 .player {
     position: absolute;
     left: 0px;
@@ -52,42 +52,18 @@ body {
     font-size: 40px;
 }
 
-/ Frage (RIESIG) /
+/ Frage /
 #question {
     font-size: 60px;
     font-weight: bold;
-    margin: 20px;
 }
 
-/ Buttons /
+/ Buttons */
 button {
     font-size: 28px;
     margin: 10px;
-    padding: 20px;
-    border-radius: 15px;
-    border: none;
-    color: white;
-    background: orange;
-}
-
-button:hover {
-    background: red;
-}
-
-/ Menü Buttons /
-.menu button {
-    background: green;
-}
-
-/ Feedback /
-#feedback {
-    font-size: 28px;
-    margin: 10px;
-}
-
-/ Combo */
-#combo {
-    font-size: 28px;
+    padding: 15px;
+    border-radius: 12px;
 }
 </style>
 
@@ -95,17 +71,16 @@ button:hover {
 
 <body>
 
-<h1>🚜💥 Ninos Monster Truck Rennen 🏁</h1>
+<h1>🚜💥 Ninos Rennen 🏁</h1>
 
-<!-- Menü -->
-<div id="menu" class="menu">
-    <h2>Wähl ein Level, Nino!</h2>
-    <button onclick="startLevel(1)">🌵 leicht</button>
-    <button onclick="startLevel(2)">🏔️ mittel</button>
-    <button onclick="startLevel(3)">🌋 schwer</button>
+<!-- MENU -->
+<div id="menu">
+    <button onclick="startLevel(1)">Level 1</button>
+    <button onclick="startLevel(2)">Level 2</button>
+    <button onclick="startLevel(3)">Level 3</button>
 </div>
 
-<!-- Spiel -->
+<!-- GAME -->
 <div id="game" style="display:none;">
 
 <div class="track">
@@ -118,105 +93,106 @@ button:hover {
 <p id="question"></p>
 <div id="answers"></div>
 <p id="feedback"></p>
-<p>🔥 Combo: <span id="combo">0</span></p>
 
-<button onclick="back()">⬅ Zurück</button>
+<button onclick="back()">⬅ Menü</button>
 
 </div>
 
 <script>
 
+// Variablen
 var correct = 0;
 var playerPos = 0;
 var enemyPos = 0;
-var combo = 0;
 var level = 1;
-var enemySpeed = 2;
+var enemySpeed = 1.5;
 
-// Start Level
+// GAME LOOP (wichtig!)
+function gameLoop() {
+
+    // Gegner fährt JEDE FRAME
+    enemyPos += enemySpeed;
+
+    // Position setzen
+    document.getElementById("enemy").style.left = enemyPos + "px";
+    document.getElementById("player").style.left = playerPos + "px";
+
+    // Item Check
+    checkItem();
+
+    // Gegner gewinnt
+    if (enemyPos > 300) {
+        document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
+        resetGame();
+    }
+
+    // Wiederholen
+    requestAnimationFrame(gameLoop);
+}
+
+// START LEVEL
 function startLevel(l) {
 
     level = l;
 
-    if (level === 1) enemySpeed = 1.5;
-    if (level === 2) enemySpeed = 2.5;
-    if (level === 3) enemySpeed = 3.5;
+    if (level === 1) enemySpeed = 1.2;
+    if (level === 2) enemySpeed = 2;
+    if (level === 3) enemySpeed = 3;
 
     playerPos = 0;
     enemyPos = 0;
-    combo = 0;
 
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
 
     moveItem();
-    updatePositions();
     newQuestion();
+
+    // GAME LOOP START
+    requestAnimationFrame(gameLoop);
 }
 
 // zurück
 function back() {
-    document.getElementById("game").style.display = "none";
-    document.getElementById("menu").style.display = "block";
+    location.reload();
 }
 
-// Gegner fährt
-setInterval(function() {
-    enemyPos += enemySpeed;
-    updatePositions();
-
-    if (enemyPos >= 300) {
-        document.getElementById("feedback").innerText = "😱 Der Gegner war schneller!";
-        reset();
-    }
-}, 800);
-
-// Positionen
-function updatePositions() {
-    document.getElementById("player").style.left = playerPos + "px";
-    document.getElementById("enemy").style.left = enemyPos + "px";
-
-    checkItem();
-}
-
-// Item platzieren
+// ITEM POSITION
 function moveItem() {
     var pos = Math.random() * 250;
     document.getElementById("item").style.left = pos + "px";
 }
 
-// Item check
+// ITEM KOLLISION
 function checkItem() {
-    var item = document.getElementById("item").offsetLeft;
+    var itemPos = document.getElementById("item").offsetLeft;
 
-    if (Math.abs(playerPos - item) < 30) {
+    if (Math.abs(playerPos - itemPos) < 30) {
         useItem();
         moveItem();
     }
 }
 
-// Item benutzen
+// ITEM EFFEKT
 function useItem() {
 
     var r = Math.random();
 
     if (r < 0.33) {
         playerPos += 60;
-        document.getElementById("feedback").innerText = "🚀 Turbo Boost!";
-    }
+        document.getElementById("feedback").innerText = "🚀 Turbo!";
+    } 
     else if (r < 0.66) {
-        enemySpeed = 1;
+        enemySpeed = enemySpeed * 0.5;
         document.getElementById("feedback").innerText = "🐌 Gegner langsam!";
-    }
+    } 
     else {
         playerPos += 100;
         document.getElementById("feedback").innerText = "💥 Mega Boost!";
     }
-
-    updatePositions();
 }
 
-// Aufgabe
+// FRAGE
 function newQuestion() {
 
     var max = 5 + level * 5;
@@ -229,11 +205,10 @@ function newQuestion() {
     document.getElementById("question").innerText =
         a + " + " + b + " = ?";
 
-    var answers = [];
-    answers.push(correct);
+    var answers = [correct];
 
     while (answers.length < 4) {
-        var wrong = correct + Math.floor(Math.random()*6) - 3;
+        var wrong = correct + Math.floor(Math.random()*6)-3;
         if (wrong >= 0 && answers.indexOf(wrong) === -1) {
             answers.push(wrong);
         }
@@ -245,6 +220,7 @@ function newQuestion() {
     box.innerHTML = "";
 
     for (var i = 0; i < answers.length; i++) {
+
         var btn = document.createElement("button");
         btn.innerText = answers[i];
 
@@ -258,46 +234,31 @@ function newQuestion() {
     }
 }
 
-// Antwort
+// ANTWORT
 function check(v) {
 
     if (v === correct) {
-
-        combo++;
         playerPos += 30;
-
-        document.getElementById("feedback").innerText = "🎉 Super Nino!";
-
-        if (combo >= 3) {
-            playerPos += 60;
-            document.getElementById("feedback").innerText = "🚀 TURBO!";
-            combo = 0;
-        }
-
-        if (playerPos >= 300) {
-            document.getElementById("feedback").innerText = "🏆 Du hast gewonnen Nino!!!";
-            reset();
-        }
-
-    } else {
-        combo = 0;
+        document.getElementById("feedback").innerText = "🎉 Super!";
+    } 
+    else {
         document.getElementById("feedback").innerText = "😅 Versuch nochmal!";
     }
 
-    document.getElementById("combo").innerText = combo;
-
-    updatePositions();
+    // Sieg
+    if (playerPos > 300) {
+        document.getElementById("feedback").innerText = "🏆 Gewonnen!";
+        resetGame();
+    }
 
     setTimeout(newQuestion, 800);
 }
 
-// Reset
-function reset() {
+// RESET
+function resetGame() {
     playerPos = 0;
     enemyPos = 0;
-    combo = 0;
     moveItem();
-    updatePositions();
 }
 
 </script>
