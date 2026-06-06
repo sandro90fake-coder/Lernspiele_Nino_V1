@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Monster Truck Rennen</title>
+<title>Ninos Monster Truck Level Rennen</title>
 
 <style>
 body {
@@ -12,9 +12,10 @@ body {
     color: white;
 }
 
+/* Strecke /
 .track {
     width: 90%;
-    height: 150px;
+    height: 160px;
     background: #333;
     margin: 20px auto;
     border-radius: 15px;
@@ -23,15 +24,15 @@ body {
 
 .player {
     position: absolute;
-    left: 0%;
+    left: 0px;
     top: 20px;
     font-size: 60px;
 }
 
 .enemy {
     position: absolute;
-    left: 0%;
-    top: 80px;
+    left: 0px;
+    top: 90px;
     font-size: 50px;
 }
 
@@ -42,18 +43,34 @@ body {
     font-size: 30px;
 }
 
+/ Buttons /
 button {
     font-size: 22px;
     margin: 8px;
     padding: 12px;
 }
-</style>
 
+/ Map */
+.hidden {
+    display:none;
+}
+</style>
 </head>
 
 <body>
 
 <h1>🚜 Ninos Monster Truck Rennen 🏁</h1>
+
+<!-- LEVEL AUSWAHL -->
+<div id="menu">
+    <h2>Wähle ein Level</h2>
+    <button onclick="startLevel(1)">Level 1 (leicht)</button>
+    <button onclick="startLevel(2)">Level 2 (mittel)</button>
+    <button onclick="startLevel(3)">Level 3 (schwer)</button>
+</div>
+
+<!-- GAME -->
+<div id="game" class="hidden">
 
 <div class="track">
     <div id="player" class="player">🚜</div>
@@ -61,10 +78,14 @@ button {
     <div class="finish">🏁</div>
 </div>
 
-<p id="question">Start...</p>
+<p id="question"></p>
 <div id="answers"></div>
 <p id="feedback"></p>
-<p>Combo: <span id="combo">0</span></p>
+<p>🔥 Combo: <span id="combo">0</span></p>
+
+<button onclick="backToMenu()">⬅ Menü</button>
+
+</div>
 
 <script>
 
@@ -72,24 +93,61 @@ var correct = 0;
 var playerPos = 0;
 var enemyPos = 0;
 var combo = 0;
+var level = 1;
+var enemySpeed = 2;
 
-// Gegner bewegt sich automatisch
+// LEVEL START
+function startLevel(l) {
+    level = l;
+
+    // Schwierigkeit
+    if (level === 1) enemySpeed = 1.5;
+    if (level === 2) enemySpeed = 2.5;
+    if (level === 3) enemySpeed = 3.5;
+
+    playerPos = 0;
+    enemyPos = 0;
+    combo = 0;
+
+    document.getElementById("menu").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    updatePositions();
+    newQuestion();
+}
+
+// Zurück
+function backToMenu() {
+    document.getElementById("game").classList.add("hidden");
+    document.getElementById("menu").classList.remove("hidden");
+}
+
+// Gegner Bewegung
 function moveEnemy() {
-    enemyPos = enemyPos + Math.random() * 2;
-    document.getElementById("enemy").style.left = enemyPos + "%";
+    enemyPos += enemySpeed;
 
-    if (enemyPos >= 80) {
+    updatePositions();
+
+    if (enemyPos >= 300) {
         document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
         resetGame();
     }
 }
 
-setInterval(moveEnemy, 1000);
+setInterval(moveEnemy, 800);
 
+// Position anwenden
+function updatePositions() {
+    document.getElementById("player").style.left = playerPos + "px";
+    document.getElementById("enemy").style.left = enemyPos + "px";
+}
+
+// Aufgabe
 function newQuestion() {
+    var max = 5 + level * 5;
 
-    var a = Math.floor(Math.random() * 10);
-    var b = Math.floor(Math.random() * 10);
+    var a = Math.floor(Math.random() * max);
+    var b = Math.floor(Math.random() * max);
 
     correct = a + b;
 
@@ -101,13 +159,11 @@ function newQuestion() {
 
     while (answers.length < 4) {
         var wrong = correct + Math.floor(Math.random()*6) - 3;
-
         if (wrong >= 0 && answers.indexOf(wrong) === -1) {
             answers.push(wrong);
         }
     }
 
-    // mischen
     answers.sort(function(){ return Math.random() - 0.5; });
 
     var container = document.getElementById("answers");
@@ -117,8 +173,8 @@ function newQuestion() {
         var btn = document.createElement("button");
         btn.innerText = answers[i];
 
-        btn.onclick = (function(value) {
-            return function() {
+        btn.onclick = (function(value){
+            return function(){
                 check(value);
             };
         })(answers[i]);
@@ -127,25 +183,25 @@ function newQuestion() {
     }
 }
 
+// Antwort prüfen
 function check(value) {
 
     if (value === correct) {
 
-        combo = combo + 1;
-        playerPos = playerPos + 10;
+        combo++;
+        playerPos += 30;
 
         document.getElementById("feedback").innerText = "✅ Richtig!";
-        document.getElementById("player").style.left = playerPos + "%";
 
         // Turbo
         if (combo >= 3) {
-            playerPos = playerPos + 15;
+            playerPos += 50;
             document.getElementById("feedback").innerText = "🚀 TURBO!";
             combo = 0;
         }
 
         // Sieg
-        if (playerPos >= 80) {
+        if (playerPos >= 300) {
             document.getElementById("feedback").innerText = "🏆 Nino gewinnt!";
             resetGame();
         }
@@ -157,19 +213,19 @@ function check(value) {
 
     document.getElementById("combo").innerText = combo;
 
+    updatePositions();
+
     setTimeout(newQuestion, 800);
 }
 
+// Reset
 function resetGame() {
     playerPos = 0;
     enemyPos = 0;
     combo = 0;
 
-    document.getElementById("player").style.left = "0%";
-    document.getElementById("enemy").style.left = "0%";
+    updatePositions();
 }
-
-newQuestion();
 
 </script>
 
