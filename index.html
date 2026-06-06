@@ -2,272 +2,321 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ninos Mega Spiel</title>
+<title>Ninos Monster Truck Welt</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: linear-gradient(#4facfe, #00f2fe);
-    color: white;
+    margin:0;
+    overflow:hidden;
 }
 
-/* Strecke /
-.track {
-    width: 90%;
-    height: 180px;
-    background: #333;
-    margin: 20px auto;
-    border-radius: 20px;
+/* Himmel /
+.sky {
+    background: linear-gradient(#4facfe, #87CEEB);
+    height: 100vh;
     position: relative;
 }
 
-/ Fahrzeuge */
+/ Hügel /
+.hills {
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:200px;
+    background: radial-gradient(circle at 50% 100%, green 60%, transparent 61%);
+}
+
+/ Strecke /
+.track {
+    position:absolute;
+    bottom:50px;
+    width:100%;
+    height:150px;
+    background:#222;
+}
+
+/ Strassenlinien /
+.track::after {
+    content:"";
+    position:absolute;
+    top:50%;
+    width:100%;
+    height:5px;
+    background: repeating-linear-gradient(
+        90deg,
+        white,
+        white 20px,
+        transparent 20px,
+        transparent 40px
+    );
+}
+
+/ Ziel /
+.finish {
+    position:absolute;
+    right:20px;
+    top:0;
+    width:20px;
+    height:100%;
+    background: repeating-linear-gradient(
+        45deg,
+        white 0px,
+        white 5px,
+        black 5px,
+        black 10px
+    );
+}
+
+/ Fahrzeuge /
 .player {
-    position: absolute;
-    left: 0px;
-    top: 20px;
-    font-size: 80px;
+    position:absolute;
+    bottom:60px;
+    left:0px;
+    font-size:60px;
 }
 
 .enemy {
-    position: absolute;
-    left: 0px;
-    top: 100px;
-    font-size: 70px;
+    position:absolute;
+    bottom:10px;
+    left:0px;
+    font-size:50px;
 }
 
-.finish {
-    position: absolute;
-    right: 10px;
-    top: 60px;
-    font-size: 40px;
+/ UI /
+#ui {
+    position:absolute;
+    top:10px;
+    width:100%;
+    text-align:center;
 }
 
+/ Frage /
 #question {
-    font-size: 60px;
-    font-weight: bold;
+    font-size:50px;
+    font-weight:bold;
 }
 
+/ Buttons /
 button {
-    font-size: 26px;
-    margin: 10px;
-    padding: 12px;
-}
-
-#achievements {
-    margin-top: 10px;
-    font-size: 20px;
+    font-size:24px;
+    padding:10px;
+    margin:5px;
 }
 </style>
-
 </head>
 
 <body>
 
-<h1>🚜💥 Ninos Mega Spiel 🏁</h1>
-
-<!-- MENU -->
 <div id="menu">
-    <h2>Level wählen</h2>
+    <h2>🚜 Ninos Spiel</h2>
+
     <button onclick="startLevel(1)">⭐ Level 1</button>
     <button onclick="startLevel(2)">🏁 Level 2</button>
     <button onclick="startLevel(3)">🔥 Level 3</button>
 
-    <h2>Fahrzeug</h2>
+    <h3>Fahrzeuge</h3>
     <div id="cars"></div>
 </div>
 
-<!-- GAME -->
 <div id="game" style="display:none;">
 
-<div class="track">
+<div class="sky">
+
     <div id="player" class="player">🚜</div>
     <div id="enemy" class="enemy">🚗</div>
-    <div class="finish">🏁</div>
+
+    <div class="track">
+        <div class="finish"></div>
+    </div>
+
+    <div class="hills"></div>
+
 </div>
 
-<p id="question"></p>
-<div id="answers"></div>
-<p id="feedback"></p>
+<div id="ui">
+    <p id="question"></p>
+    <div id="answers"></div>
+    <p id="feedback"></p>
+    <p id="stars"></p>
+    <div id="achievements"></div>
+</div>
 
-<p id="stars">⭐ Sterne: 0</p>
-
-<div id="achievements"></div>
-
-<button onclick="location.reload()">⬅ Menü</button>
+<button onclick="goMenu()">⬅ Menü</button>
 
 </div>
 
 <script>
 
-var correct = 0;
-var level = 1;
-var stars = 0;
+// ✅ SPEICHER LADEN
+var unlockedCars = JSON.parse(localStorage.getItem("cars")) || ["🚜"];
+var achievements = JSON.parse(localStorage.getItem("ach")) || [];
 
-var playerPos = 0;
-var enemyPos = 0;
-var enemySpeed = 2;
+var currentCar = unlockedCars[0];
 
-var currentCar = "🚜";
-var unlockedCars = ["🚜"];
+// Spiel Variablen
+var correct=0, level=1, stars=0;
+var playerPos=0, enemyPos=0, enemySpeed=2;
 
-var achievements = [];
+// --- SPEICHERN ---
+function saveData(){
+    localStorage.setItem("cars", JSON.stringify(unlockedCars));
+    localStorage.setItem("ach", JSON.stringify(achievements));
+}
 
-// --- GAME LOOP ---
-setInterval(function () {
+// --- MENU ---
+function renderCars(){
+    var div = document.getElementById("cars");
+    div.innerHTML="";
+    unlockedCars.forEach(function(c){
+        var b=document.createElement("button");
+        b.innerText=c;
+        b.onclick=function(){ currentCar=c; };
+        div.appendChild(b);
+    });
+}
+renderCars();
 
-    if (level > 1) {
-        enemyPos += enemySpeed;
-        document.getElementById("enemy").style.left = enemyPos + "px";
-
-        if (enemyPos > 300) {
-            document.getElementById("feedback").innerText = "😱 Gegner gewinnt!";
-            reset();
-        }
+// --- ACHIEVEMENT ---
+function addAch(text){
+    if(!achievements.includes(text)){
+        achievements.push(text);
+        document.getElementById("achievements").innerHTML += "<div>🏆 "+text+"</div>";
+        saveData();
     }
+}
 
-    document.getElementById("player").style.left = playerPos + "px";
-
-}, 100);
-
-// --- START LEVEL ---
+// --- START ---
 function startLevel(l){
+    level=l;
+    stars=0;
+    playerPos=0;
+    enemyPos=0;
 
-    level = l;
-    stars = 0;
-    playerPos = 0;
-    enemyPos = 0;
+    document.getElementById("menu").style.display="none";
+    document.getElementById("game").style.display="block";
 
-    if (level === 1) {
-        document.getElementById("enemy").style.display = "none";
+    document.getElementById("player").innerText=currentCar;
+
+    if(level===1){
+        document.getElementById("enemy").style.display="none";
     } else {
-        document.getElementById("enemy").style.display = "block";
+        document.getElementById("enemy").style.display="block";
     }
-
-    document.getElementById("menu").style.display = "none";
-    document.getElementById("game").style.display = "block";
-
-    document.getElementById("player").innerText = currentCar;
 
     newQuestion();
 }
 
-// --- CARS ---
-function renderCars(){
+// --- GAME LOOP ---
+setInterval(function(){
 
-    var div = document.getElementById("cars");
-    div.innerHTML = "";
+    if(level>1){
+        enemyPos+=enemySpeed;
+        document.getElementById("enemy").style.left=enemyPos+"px";
 
-    unlockedCars.forEach(function(car){
-        var btn = document.createElement("button");
-        btn.innerText = car;
-        btn.onclick = function(){
-            currentCar = car;
-        };
-        div.appendChild(btn);
-    });
-}
-
-renderCars();
-
-// --- ACHIEVEMENTS ---
-function addAchievement(text){
-    if (!achievements.includes(text)){
-        achievements.push(text);
-
-        var div = document.getElementById("achievements");
-        div.innerHTML += "<div>🏆 " + text + "</div>";
-    }
-}
-
-// --- QUESTION ---
-function newQuestion(){
-
-    var max = 5 + level * 5;
-
-    var a = Math.floor(Math.random()*max);
-    var b = Math.floor(Math.random()*max);
-
-    correct = a + b;
-
-    document.getElementById("question").innerText =
-        a + " + " + b + " = ?";
-
-    var answers = [correct];
-
-    while (answers.length < 4){
-        var wrong = correct + Math.floor(Math.random()*6)-3;
-        if (wrong >= 0 && !answers.includes(wrong)){
-            answers.push(wrong);
+        if(enemyPos>window.innerWidth-100){
+            document.getElementById("feedback").innerText="😱 Gegner gewinnt!";
+            reset();
         }
     }
 
-    answers.sort(function(){ return Math.random()-0.5; });
+    document.getElementById("player").style.left=playerPos+"px";
 
-    var box = document.getElementById("answers");
-    box.innerHTML = "";
+},100);
 
-    answers.forEach(function(val){
-        var btn = document.createElement("button");
-        btn.innerText = val;
-        btn.onclick = function(){ check(val); };
+// --- FRAGEN ---
+function newQuestion(){
+
+    var max = 5 + level5;
+    var a = Math.floor(Math.random()*max);
+    var b = Math.floor(Math.random()*max);
+
+    correct = a+b;
+
+    document.getElementById("question").innerText=a+" + "+b+" = ?";
+
+    var answers=[correct];
+
+    while(answers.length<4){
+        var w = correct + Math.floor(Math.random()*6)-3;
+        if(w>=0 && !answers.includes(w)){
+            answers.push(w);
+        }
+    }
+
+    answers.sort(()=>Math.random()-0.5);
+
+    var box=document.getElementById("answers");
+    box.innerHTML="";
+
+    answers.forEach(function(v){
+        var btn=document.createElement("button");
+        btn.innerText=v;
+        btn.onclick=()=>check(v);
         box.appendChild(btn);
     });
+
 }
 
 // --- CHECK ---
 function check(v){
 
-    if (v === correct){
+    if(v===correct){
 
-        if (level === 1){
+        if(level===1){
+
             stars++;
-            document.getElementById("stars").innerText = "⭐ Sterne: " + stars;
+            document.getElementById("stars").innerText="⭐ "+stars;
 
-            document.getElementById("feedback").innerText = "🎉 Super Nino!";
+            if(stars===1) addAch("Erster Stern ⭐");
 
-            if (stars === 1) addAchievement("Erster Stern ⭐");
-
-            if (stars === 5){
-                addAchievement("Sternensammler ⭐⭐⭐⭐⭐");
+            if(stars>=5){
+                addAch("Star Spieler ⭐⭐⭐⭐⭐");
                 unlockCar("🚙");
+                document.getElementById("feedback").innerText="🏆 Mega Nino!";
             }
 
         } else {
 
-            playerPos += 30;
+            playerPos+=40;
 
-            if (playerPos > 300){
-                addAchievement("Rennen gewonnen 🏁");
+            if(playerPos>window.innerWidth-150){
+                addAch("Rennen gewonnen 🏁");
                 unlockCar("🚓");
-                document.getElementById("feedback").innerText = "🏆 GEWONNEN!";
+                document.getElementById("feedback").innerText="🏆 GEWONNEN!";
                 reset();
             }
+
         }
 
     } else {
-        document.getElementById("feedback").innerText = "😅 Versuch nochmal!";
+        document.getElementById("feedback").innerText="😅 Versuch nochmal!";
     }
 
-    setTimeout(newQuestion, 800);
+    setTimeout(newQuestion,800);
 }
 
-// --- UNLOCK CAR ---
-function unlockCar(car){
-    if (!unlockedCars.includes(car)){
-        unlockedCars.push(car);
+// --- FREISCHALTEN ---
+function unlockCar(c){
+    if(!unlockedCars.includes(c)){
+        unlockedCars.push(c);
         renderCars();
-
-        document.getElementById("feedback").innerText =
-            "🎁 Neues Fahrzeug freigeschaltet! " + car;
+        saveData();
+        document.getElementById("feedback").innerText="🎁 Neues Fahrzeug: "+c;
     }
 }
 
 // --- RESET ---
 function reset(){
-    playerPos = 0;
-    enemyPos = 0;
+    playerPos=0;
+    enemyPos=0;
+}
+
+// --- MENU ---
+function goMenu(){
+    document.getElementById("game").style.display="none";
+    document.getElementById("menu").style.display="block";
 }
 
 </script>
