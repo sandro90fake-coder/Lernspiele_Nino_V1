@@ -6,25 +6,53 @@
 <title>Mathe Arcade</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;800&display=swap');
+
 body {
-  font-family: Arial;
+  font-family: 'Nunito', sans-serif;
   background: #0d1f3c;
   color: white;
   text-align: center;
 }
 
+/* Titel /
 h1 {
-  font-size: 3rem;
+  font-family: 'Bangers', cursive;
+  font-size: 4rem;
+  margin-bottom: 10px;
 }
 
+/ Spieler /
+.player-box {
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+}
+
+button.save {
+  padding: 10px 20px;
+  margin-left: 10px;
+  border-radius: 10px;
+  border:none;
+  background: #06d6a0;
+  cursor: pointer;
+}
+
+/ Grid /
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
   gap: 20px;
-  max-width: 800px;
+  max-width: 900px;
   margin: 40px auto;
 }
 
+/ Cards /
 .card {
   background: #16213e;
   padding: 20px;
@@ -32,38 +60,143 @@ h1 {
   text-decoration: none;
   color: white;
   display: block;
+  transition: .2s;
+  position: relative;
 }
 
 .card:hover {
+  transform: translateY(-5px);
   background: #1e3a5f;
+}
+
+.card:active {
+  transform: scale(0.96);
 }
 
 .emoji {
   font-size: 3rem;
 }
+
+.title {
+  font-family: 'Bangers';
+  font-size: 1.5rem;
+}
+
+/ Sterne /
+.stars {
+  margin-top: 10px;
+  font-size: 1.2rem;
+}
+
+/ Highscore /
+.score {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #ffd60a;
+}
+
+/ Fortschritt */
+.progress {
+  height: 6px;
+  background: #111;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #06d6a0;
+  width: 0%;
+}
+
 </style>
 </head>
 
 <body>
 
 <h1>🎮 Mathe Arcade</h1>
-<p>Wähle dein Spiel</p>
+
+<!-- Spielername -->
+<div class="player-box">
+  <input id="playerName" placeholder="Dein Name">
+  <button class="save" onclick="saveName()">Speichern</button>
+</div>
+
+<h3 id="welcome"></h3>
 
 <div class="grid">
 
 <!-- AUTO SPIEL -->
 <a class="card" href="auto-mathe-rennen.html">
   <div class="emoji">🏎️</div>
-  <h2>Auto Mathe-Rennen</h2>
+  <div class="title">Auto Mathe-Rennen</div>
+
+  <div class="stars" id="stars-auto">☆☆☆☆☆</div>
+  <div class="score" id="score-auto">Highscore: 0</div>
+
+  <div class="progress">
+    <div class="progress-bar" id="progress-auto"></div>
+  </div>
 </a>
 
-<!-- ✅ ✅ ✅ DINO SPIEL (WICHTIG!) -->
+<!-- DINO SPIEL -->
 <a class="card" href="dino-zahlen-jagd.html">
   <div class="emoji">🦕</div>
-  <h2>Dino Zahlen-Jagd</h2>
+  <div class="title">Dino Zahlen-Jagd</div>
+
+  <div class="stars" id="stars-dino">☆☆☆☆☆</div>
+  <div class="score" id="score-dino">Highscore: 0</div>
+
+  <div class="progress">
+    <div class="progress-bar" id="progress-dino"></div>
+  </div>
 </a>
 
 </div>
+
+<script>
+
+// 🔹 Name speichern
+function saveName(){
+  let name = document.getElementById("playerName").value;
+  localStorage.setItem("playerName", name);
+  updateUI();
+}
+
+// 🔹 Fortschritt laden
+function updateUI(){
+  let name = localStorage.getItem("playerName") || "";
+  if(name){
+    document.getElementById("welcome").textContent = "Willkommen " + name + " 👋";
+    document.getElementById("playerName").value = name;
+  }
+
+  updateGame("auto");
+  updateGame("dino");
+}
+
+// 🔹 Spiel anzeigen
+function updateGame(id){
+  let score = localStorage.getItem("score_"+id) || 0;
+  let level = localStorage.getItem("level_"+id) || 0;
+
+  document.getElementById("score-"+id).textContent = "Highscore: " + score;
+
+  // Sterne (max 5)
+  let starsCount = Math.min(5, Math.floor(level / 2));
+  document.getElementById("stars-"+id).textContent =
+    "★".repeat(starsCount) + "☆".repeat(5 - starsCount);
+
+  // Fortschritt
+  let percent = Math.min(100, (level / 10) * 100);
+  document.getElementById("progress-"+id).style.width = percent + "%";
+}
+
+// INIT
+updateUI();
+
+</script>
 
 </body>
 </html>
