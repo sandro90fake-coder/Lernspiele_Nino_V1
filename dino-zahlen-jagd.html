@@ -4,131 +4,863 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dino Zahlen-Jagd</title>
-
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800;900&display=swap');
+
+:root {
+  --jungle:   #1a3a1a;
+  --jungle2:  #0e2a0e;
+  --leaf:     #2d6a2d;
+  --leaf2:    #3a8a3a;
+  --yellow:   #ffe94d;
+  --orange:   #ff8c42;
+  --red:      #ff4d6d;
+  --green:    #52d68a;
+  --teal:     #38d9a9;
+  --blue:     #74c0fc;
+  --purple:   #da77f2;
+  --text:     #f5ffe8;
+  --muted:    #7aab7a;
+  --card:     #152815;
+  --card2:    #1f3d1f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  font-family: Arial;
+  font-family: 'Nunito', sans-serif;
+  background: var(--jungle2);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* ── jungle background ── */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 100%, #1a4a1a 0%, #0a1e0a 100%);
+}
+
+/* ── floating leaves ── */
+.leaf-layer {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.leaf {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0.18;
+  animation: leafSway linear infinite;
+}
+@keyframes leafSway {
+  0%   { transform: translateY(-60px) rotate(0deg)   translateX(0); }
+  25%  { transform: translateY(25vh)  rotate(30deg)  translateX(20px); }
+  50%  { transform: translateY(50vh)  rotate(-15deg) translateX(-10px); }
+  75%  { transform: translateY(75vh)  rotate(20deg)  translateX(15px); }
+  100% { transform: translateY(105vh) rotate(0deg)   translateX(0); }
+}
+
+/* ── screens ── */
+.screen { display: none; position: relative; z-index: 1; }
+.screen.active { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 16px 12px 30px; }
+
+/* ══════════ START SCREEN ══════════ */
+#startScreen {
+  justify-content: center;
+  gap: 20px;
   text-align: center;
-  background: #0d1f3c;
-  color: white;
+}
+.start-dino {
+  font-size: 7rem;
+  animation: dinoBounce 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.5));
+  line-height: 1;
+}
+@keyframes dinoBounce {
+  0%,100% { transform: translateY(0) rotate(-3deg) scale(1); }
+  50%      { transform: translateY(-18px) rotate(3deg) scale(1.05); }
+}
+.game-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.4rem, 9vw, 4.5rem);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 #7a5c00, 6px 6px 0 rgba(0,0,0,0.3);
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+.game-sub {
+  font-size: 1.05rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+.name-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 300px;
+}
+.name-group label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.name-input {
+  background: var(--card);
+  border: 2.5px solid var(--leaf);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 1.2rem;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  text-align: center;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.name-input:focus { outline: none; border-color: var(--yellow); }
+
+.start-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #52d68a, #2aab60);
+  color: #0e2a0e;
+  border: none;
+  border-radius: 20px;
+  padding: 16px 52px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #1a6b3a, 0 10px 24px rgba(0,0,0,0.4);
+  transition: all 0.15s;
+  width: 100%;
+  max-width: 300px;
+}
+.start-btn:hover  { transform: translateY(-3px); box-shadow: 0 9px 0 #1a6b3a, 0 14px 30px rgba(0,0,0,0.4); }
+.start-btn:active { transform: translateY(3px);  box-shadow: 0 3px 0 #1a6b3a; }
+
+/* ══════════ GAME SCREEN ══════════ */
+#gameScreen {
+  justify-content: flex-start;
+  gap: 0;
+  padding: 12px 12px 24px;
 }
 
-h1 { font-size: 3rem; }
+/* ── top HUD ── */
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+  background: var(--card);
+  border: 2px solid var(--leaf);
+  border-radius: 16px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+}
+.hud-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.hud-val {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8rem;
+  color: var(--yellow);
+  line-height: 1;
+}
+.hud-lbl {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hud-stars { display: flex; gap: 3px; font-size: 1.3rem; }
 
-#dinoArea {
-  font-size: 4rem;
-  margin: 30px 0;
+/* ── progress vine ── */
+.vine-wrap {
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 12px;
+}
+.vine-track {
+  height: 16px;
+  background: var(--card2);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+.vine-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--leaf), var(--green), var(--yellow));
+  transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.vine-dino {
+  position: absolute;
+  right: 0; top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  transition: right 0.5s;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+.vine-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 3px;
 }
 
-.buttons {
+/* ── dino display area ── */
+.dino-scene {
+  width: 100%;
+  max-width: 480px;
+  min-height: 220px;
+  background: var(--card);
+  border: 2.5px solid var(--leaf);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+/* jungle floor */
+.dino-scene::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 36px;
+  background: linear-gradient(0deg, #1f3d1f 0%, transparent 100%);
+  border-radius: 0 0 22px 22px;
+  pointer-events: none;
+}
+
+.scene-question {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  color: var(--teal);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* ── dino emojis grid ── */
+.dino-grid {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
   justify-content: center;
+  align-items: center;
+}
+.dino-item {
+  font-size: clamp(2.4rem, 8vw, 3.2rem);
+  animation: dinoAppear 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+  cursor: default;
+  transition: transform 0.15s;
+}
+.dino-item:hover { transform: scale(1.15) rotate(-5deg); }
+@keyframes dinoAppear {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0);      opacity: 1; }
+}
+.dino-item.highlight {
+  animation: dinoHighlight 0.6s ease forwards;
+}
+@keyframes dinoHighlight {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.4) rotate(-10deg); }
+  60%  { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+
+/* ── number pad ── */
+.numpad-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.numpad {
+  width: 100%;
+  max-width: 480px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
-
-button {
-  width: 80px;
-  height: 80px;
-  font-size: 2rem;
-  border-radius: 15px;
-  border: none;
-  background: #06d6a0;
+.num-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.4rem;
+  background: var(--card2);
+  color: var(--text);
+  border: 2.5px solid var(--leaf);
+  border-radius: 18px;
+  padding: 14px 0;
   cursor: pointer;
+  transition: all 0.12s;
+  box-shadow: 0 5px 0 #0a1e0a;
+  position: relative;
+  overflow: hidden;
+}
+.num-btn:hover  { border-color: var(--yellow); color: var(--yellow); transform: translateY(-2px); box-shadow: 0 7px 0 #0a1e0a; }
+.num-btn:active { transform: translateY(4px);  box-shadow: 0 1px 0 #0a1e0a; }
+.num-btn.correct-flash {
+  background: var(--green) !important;
+  border-color: var(--green) !important;
+  color: #0e2a0e !important;
+  animation: btnCorrect 0.5s ease;
+}
+.num-btn.wrong-flash {
+  background: var(--red) !important;
+  border-color: var(--red) !important;
+  animation: btnWrong 0.4s ease;
+}
+@keyframes btnCorrect {
+  0%,100% { transform: scale(1); }
+  40%      { transform: scale(1.2); }
+}
+@keyframes btnWrong {
+  0%,100%  { transform: translateX(0); }
+  20%      { transform: translateX(-10px); }
+  40%      { transform: translateX(10px); }
+  60%      { transform: translateX(-6px); }
+  80%      { transform: translateX(6px); }
 }
 
-.feedback { font-size: 2rem; margin: 10px; }
+/* ══════════ FEEDBACK OVERLAY ══════════ */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.feedback-overlay.show { opacity: 1; pointer-events: none; }
+.fb-emoji  { font-size: 6rem; animation: fbPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.fb-text   { font-family: 'Fredoka One', cursive; font-size: 3rem; text-align: center;
+             text-shadow: 3px 3px 0 rgba(0,0,0,0.4); animation: fbPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.05s both; }
+.fb-pts    { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--yellow); opacity: 0.9; }
+@keyframes fbPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ══════════ LEVEL UP ══════════ */
+.levelup-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(5,15,5,0.88);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  padding: 20px;
+}
+.levelup-overlay.show { display: flex; }
+.lu-dino  { font-size: 5.5rem; animation: luDino 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes luDino { from { transform: scale(0) rotate(-180deg); } to { transform: scale(1) rotate(0); } }
+.lu-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.2rem, 8vw, 3.5rem);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 #7a5c00;
+  letter-spacing: 1px;
+  animation: fbPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.lu-unlock {
+  font-size: 1rem;
+  color: var(--green);
+  font-weight: 800;
+  background: rgba(82,214,138,0.12);
+  border: 1.5px solid var(--green);
+  border-radius: 10px;
+  padding: 8px 20px;
+}
+.lu-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.6rem;
+  background: linear-gradient(135deg, var(--green), #2aab60);
+  color: #0e2a0e;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 48px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #1a6b3a;
+  transition: all 0.15s;
+}
+.lu-btn:hover  { transform: translateY(-3px); }
+.lu-btn:active { transform: translateY(3px);  }
+
+/* ══════════ WIN SCREEN ══════════ */
+#winScreen {
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+  padding: 30px 16px;
+}
+.win-dino  { font-size: 6rem; animation: winDino 1.2s ease-in-out infinite alternate; }
+@keyframes winDino { from { transform: rotate(-8deg) scale(1); } to { transform: rotate(8deg) scale(1.1); } }
+.win-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.2rem, 8vw, 4rem);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 #7a5c00;
+}
+.certificate {
+  background: linear-gradient(135deg, var(--card), var(--card2));
+  border: 3px solid var(--yellow);
+  border-radius: 24px;
+  padding: 24px 20px;
+  max-width: 380px;
+  width: 100%;
+  position: relative;
+}
+.cert-top   { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--yellow); margin-bottom: 10px; }
+.cert-sub   { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.cert-name  { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--green); margin: 6px 0; }
+.cert-body  { font-size: 0.9rem; color: var(--text); font-weight: 700; line-height: 1.6; }
+.cert-body strong { color: var(--yellow); }
+.cert-stats { display: flex; justify-content: center; gap: 24px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--leaf); }
+.cs-val  { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--yellow); line-height: 1; }
+.cs-lbl  { font-size: 0.68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+.win-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, var(--green), #2aab60);
+  color: #0e2a0e;
+  border: none;
+  border-radius: 18px;
+  padding: 16px 48px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #1a6b3a;
+  width: 100%;
+  max-width: 320px;
+  transition: all 0.15s;
+}
+.win-btn:hover  { transform: translateY(-3px); }
+.win-btn:active { transform: translateY(3px);  }
+
+/* ── confetti ── */
+.confetti-p {
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  animation: confFall linear forwards;
+  z-index: 300;
+  pointer-events: none;
+}
+@keyframes confFall {
+  from { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  to   { transform: translateY(100vh)  rotate(720deg); opacity: 0; }
+}
+
+/* ── sparkles ── */
+.sparkle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 60;
+  font-size: 1.8rem;
+  animation: sparkleFly 0.8s ease-out forwards;
+}
+@keyframes sparkleFly {
+  from { transform: translate(0,0) scale(1); opacity: 1; }
+  to   { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+
+@media (max-width: 400px) {
+  .num-btn  { font-size: 2rem; padding: 12px 0; }
+  .dino-item { font-size: 2.2rem; }
+}
 </style>
 </head>
-
 <body>
+<div class="bg"></div>
+<div class="leaf-layer" id="leafLayer"></div>
 
-<h1>🦕 Dino Zahlen-Jagd</h1>
+<!-- Feedback overlay -->
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="fb-emoji" id="fbEmoji"></div>
+  <div class="fb-text"  id="fbText"></div>
+  <div class="fb-pts"   id="fbPts"></div>
+</div>
 
-<h2 id="level">Level 1</h2>
-<h2 id="stage">🐣</h2>
+<!-- Level Up -->
+<div class="levelup-overlay" id="levelupOverlay">
+  <div class="lu-dino"  id="luDino">&#x1F996;</div>
+  <div class="lu-title" id="luTitle">Super! Level 2!</div>
+  <div class="lu-unlock" id="luUnlock">Neuer Dino freigeschaltet!</div>
+  <button class="lu-btn" onclick="closeLevelUp()">Weiter &#x1F44D;</button>
+</div>
 
-<p>Zähle die Dinos!</p>
+<!-- ════ START ════ -->
+<div class="screen active" id="startScreen">
+  <div class="start-dino">&#x1F996;</div>
+  <h1 class="game-title">Dino Zahlen-Jagd</h1>
+  <p class="game-sub">Zahle die Dinos und tippe die richtige Zahl!</p>
+  <div class="name-group">
+    <label>Dein Name</label>
+    <input class="name-input" id="playerName" type="text" placeholder="z.B. Ben" maxlength="14" />
+  </div>
+  <button class="start-btn" onclick="startGame()">Los geht&#x2019;s! &#x1F996;</button>
+</div>
 
-<div id="dinoArea"></div>
+<!-- ════ GAME ════ -->
+<div class="screen" id="gameScreen">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-stat">
+      <div class="hud-val" id="scoreDisplay">0</div>
+      <div class="hud-lbl">Punkte</div>
+    </div>
+    <div class="hud-stat">
+      <div class="hud-stars" id="starsDisplay">&#9734;&#9734;&#9734;&#9734;&#9734;</div>
+    </div>
+    <div class="hud-stat">
+      <div class="hud-val" id="levelDisplay">1</div>
+      <div class="hud-lbl">Level</div>
+    </div>
+  </div>
 
-<div class="buttons" id="buttons"></div>
+  <!-- Progress vine -->
+  <div class="vine-wrap">
+    <div class="vine-track">
+      <div class="vine-fill" id="vineFill" style="width:0%"></div>
+    </div>
+    <div class="vine-label" id="vineLabel">Runde 1 von 5</div>
+  </div>
 
-<div class="feedback" id="feedback"></div>
-<div id="score">⭐ 0</div>
+  <!-- Dino scene -->
+  <div class="dino-scene" id="dinoScene">
+    <div class="scene-question" id="sceneQuestion">Wie viele Dinos siehst du?</div>
+    <div class="dino-grid" id="dinoGrid"></div>
+  </div>
 
-<br>
-index.html⬅ Zurück</button>
+  <!-- Numpad label -->
+  <div class="numpad-label">Tippe die richtige Zahl!</div>
+
+  <!-- Numpad 1-9 -->
+  <div class="numpad" id="numpad">
+    <button class="num-btn" onclick="guess(1)">1</button>
+    <button class="num-btn" onclick="guess(2)">2</button>
+    <button class="num-btn" onclick="guess(3)">3</button>
+    <button class="num-btn" onclick="guess(4)">4</button>
+    <button class="num-btn" onclick="guess(5)">5</button>
+    <button class="num-btn" onclick="guess(6)">6</button>
+    <button class="num-btn" onclick="guess(7)">7</button>
+    <button class="num-btn" onclick="guess(8)">8</button>
+    <button class="num-btn" onclick="guess(9)">9</button>
+  </div>
+</div>
+
+<!-- ════ WIN ════ -->
+<div class="screen" id="winScreen">
+  <div class="win-dino">&#x1F995;</div>
+  <h1 class="win-title">Dino-Meister!</h1>
+  <div class="certificate">
+    <div class="cert-top">&#x1F3C6; DINO-URKUNDE &#x1F3C6;</div>
+    <div class="cert-sub">verliehen an</div>
+    <div class="cert-name" id="winName">Dino-Jaeger</div>
+    <div class="cert-body">hat alle <strong>Dinos gezaehlt</strong>,<br>alle <strong>8 Level</strong> gemeistert<br>und ist jetzt ein echter <strong>Dino-Meister</strong>! &#x1F996;</div>
+    <div class="cert-stats">
+      <div><div class="cs-val" id="finalScore">0</div><div class="cs-lbl">Punkte</div></div>
+      <div><div class="cs-val" id="finalCorrect">0</div><div class="cs-lbl">Richtig</div></div>
+      <div><div class="cs-val">&#x1F3C6;</div><div class="cs-lbl">Champion</div></div>
+    </div>
+  </div>
+  <button class="win-btn" onclick="restartGame()">Nochmal spielen! &#x1F996;</button>
+</div>
 
 <script>
-let dinoCount = 0;
-let level = 1;
-let score = 0;
-let correct = 0;
+// ── Dino roster — different dinos unlock per level ──
+var DINOS = [
+  '\u{1F996}', // sauropod (T-Rex face)
+  '\u{1F995}', // sauropod long neck
+  '\u{1F40A}', // croc (close enough!)
+  '\u{1F422}', // turtle
+  '\u{1F438}', // frog
+  '\u{1F40D}', // snake
+  '\u{1F98E}', // lizard
+  '\u{1F989}', // owl (prehistoric bird)
+];
 
-const stages = ["🐣","🐤","🦖","🦕","👑🦖"];
+// Level config: which dinos available, max count, rounds
+var LEVELS = [
+  {maxCount:3, rounds:5, dinoPool:[0],       name:'Dino-Anfaenger',  unlock:'Du kennst den ersten Dino!'},
+  {maxCount:4, rounds:5, dinoPool:[0,1],     name:'Dino-Entdecker',  unlock:'Langer Hals freigeschaltet!'},
+  {maxCount:5, rounds:5, dinoPool:[0,1,2],   name:'Dino-Jaeger',     unlock:'Krokodil-Freund!'},
+  {maxCount:5, rounds:5, dinoPool:[0,1,2,3], name:'Dino-Forscher',   unlock:'Schildkroete dabei!'},
+  {maxCount:6, rounds:5, dinoPool:[0,1,2,3,4], name:'Dino-Profi',    unlock:'Frosch huepft mit!'},
+  {maxCount:7, rounds:5, dinoPool:[0,1,2,3,4,5], name:'Dino-Experte',unlock:'Schlange entdeckt!'},
+  {maxCount:8, rounds:5, dinoPool:[0,1,2,3,4,5,6], name:'Dino-Held', unlock:'Eidechse dabei!'},
+  {maxCount:9, rounds:5, dinoPool:[0,1,2,3,4,5,6,7], name:'Dino-Meister', unlock:'Alle Dinos vereint!'},
+];
 
-function createButtons(){
-  const c = document.getElementById("buttons");
-  for(let i=1;i<=6;i++){
-    let b = document.createElement("button");
-    b.textContent = i;
-    b.onclick = ()=>check(i);
-    c.appendChild(b);
+var TOTAL_LEVELS = LEVELS.length;
+
+var state = {
+  level: 1,
+  round: 1,
+  score: 0,
+  correct: 0,
+  wrong: 0,
+  currentCount: 0,
+  playerName: 'Dino-Jaeger',
+  busy: false,
+};
+
+var MSG_RIGHT = ['Super!','Toll gemacht!','Klasse!','Richtig!','Wow!','Mega!','Ja!','Perfekt!'];
+var MSG_WRONG = ['Fast!','Nochmal!','Probier nochmal!','Du schaffst das!'];
+var CHEER_EMOJIS = ['\u2B50','\u{1F31F}','\u2728','\u{1F389}','\u{1F4A5}'];
+
+// ── Init background leaves ──
+(function initLeaves() {
+  var L = document.getElementById('leafLayer');
+  var items = ['\u{1F333}','\u{1F334}','\u{1F332}','\u{1F343}','\u{1F33F}'];
+  for (var i = 0; i < 12; i++) {
+    var el = document.createElement('div');
+    el.className = 'leaf';
+    el.textContent = items[i % items.length];
+    el.style.left = (Math.random() * 100) + '%';
+    el.style.fontSize = (1.5 + Math.random() * 2.5) + 'rem';
+    el.style.opacity = (0.08 + Math.random() * 0.14).toString();
+    el.style.animationDuration = (12 + Math.random() * 16) + 's';
+    el.style.animationDelay = (-Math.random() * 20) + 's';
+    L.appendChild(el);
   }
+})();
+
+// ── Screen helper ──
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
 }
 
-function newRound(){
-  let area = document.getElementById("dinoArea");
-  area.innerHTML = "";
-
-  let max = level + 1;
-  if(max > 6) max = 6;
-
-  dinoCount = Math.floor(Math.random()*max)+1;
-
-  for(let i=0;i<dinoCount;i++){
-    let d = document.createElement("span");
-    d.textContent = "🦖";
-    d.style.margin = "5px";
-    area.appendChild(d);
-  }
+// ── Start game ──
+function startGame() {
+  var n = document.getElementById('playerName').value.trim();
+  state.playerName = n || 'Dino-Jaeger';
+  state.level = 1; state.round = 1;
+  state.score = 0; state.correct = 0; state.wrong = 0;
+  state.busy = false;
+  showScreen('gameScreen');
+  updateHUD();
+  newRound();
 }
 
-function check(n){
-  let f = document.getElementById("feedback");
+// ── New round ──
+function newRound() {
+  state.busy = false;
+  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
 
-  if(n === dinoCount){
-    f.textContent = "✅ Super!";
-    f.style.color = "lightgreen";
+  // Pick random count
+  var count = Math.floor(Math.random() * lvl.maxCount) + 1;
+  state.currentCount = count;
 
-    score++;
-    correct++;
+  // Pick which dino to show this round (random from pool)
+  var dinoIdx = lvl.dinoPool[Math.floor(Math.random() * lvl.dinoPool.length)];
+  var dinoEmoji = DINOS[dinoIdx];
 
-    document.getElementById("score").textContent = "⭐ "+score;
+  // Build grid
+  var grid = document.getElementById('dinoGrid');
+  grid.innerHTML = '';
+  for (var i = 0; i < count; i++) {
+    var el = document.createElement('div');
+    el.className = 'dino-item';
+    el.textContent = dinoEmoji;
+    el.style.animationDelay = (i * 0.07) + 's';
+    grid.appendChild(el);
+  }
 
-    if(correct >= 3){
-      level++;
-      correct = 0;
+  // Update progress
+  updateVine();
+  updateHUD();
 
-      document.getElementById("level").textContent = "Level "+level;
-      document.getElementById("stage").textContent =
-        stages[Math.min(level-1, stages.length-1)];
+  // Highlight buttons
+  resetNumpad();
+}
 
-      f.textContent = "🎉 Level Up!";
+// ── Guess ──
+function guess(n) {
+  if (state.busy) return;
+  state.busy = true;
+
+  var btn = document.querySelectorAll('.num-btn')[n - 1];
+
+  if (n === state.currentCount) {
+    // CORRECT
+    state.correct++;
+    state.score += 10;
+    btn.classList.add('correct-flash');
+
+    // Highlight all dinos
+    var dinos = document.querySelectorAll('.dino-item');
+    for (var i = 0; i < dinos.length; i++) {
+      (function(d, delay) {
+        setTimeout(function() { d.classList.add('highlight'); }, delay);
+      })(dinos[i], i * 60);
     }
 
-    setTimeout(newRound,1000);
+    // Sparkles at button
+    spawnSparkles(btn);
+    showFeedback(true);
+    updateHUD();
+
+    setTimeout(function() {
+      btn.classList.remove('correct-flash');
+      nextRound();
+    }, 1100);
 
   } else {
-    f.textContent = "❌ Nochmal!";
-    f.style.color = "red";
+    // WRONG
+    state.wrong++;
+    btn.classList.add('wrong-flash');
+    showFeedback(false);
+    setTimeout(function() {
+      btn.classList.remove('wrong-flash');
+      state.busy = false;
+    }, 700);
   }
 }
 
-createButtons();
-newRound();
-</script>
+// ── Next round ──
+function nextRound() {
+  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
+  if (state.round >= lvl.rounds) {
+    // Level complete
+    state.round = 1;
+    if (state.level >= TOTAL_LEVELS) {
+      setTimeout(showWin, 400);
+    } else {
+      state.level++;
+      updateVine();
+      showLevelUp();
+    }
+  } else {
+    state.round++;
+    newRound();
+  }
+}
 
+// ── HUD ──
+function updateHUD() {
+  document.getElementById('scoreDisplay').textContent = state.score;
+  document.getElementById('levelDisplay').textContent = state.level;
+  var n = Math.min(5, Math.floor((state.level - 1) * 0.7));
+  document.getElementById('starsDisplay').textContent =
+    '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+}
+
+// ── Vine progress ──
+function updateVine() {
+  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
+  var pct = ((state.round - 1) / lvl.rounds) * 100;
+  document.getElementById('vineFill').style.width = pct + '%';
+  document.getElementById('vineLabel').textContent =
+    'Runde ' + state.round + ' von ' + lvl.rounds + ' (Level ' + state.level + ')';
+}
+
+// ── Numpad reset ──
+function resetNumpad() {
+  var btns = document.querySelectorAll('.num-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.remove('correct-flash', 'wrong-flash');
+  }
+}
+
+// ── Feedback overlay ──
+function showFeedback(ok) {
+  var ov = document.getElementById('feedbackOverlay');
+  var list = ok ? MSG_RIGHT : MSG_WRONG;
+  document.getElementById('fbEmoji').textContent = ok ? CHEER_EMOJIS[Math.floor(Math.random() * CHEER_EMOJIS.length)] : '\u{1F914}';
+  document.getElementById('fbText').textContent  = list[Math.floor(Math.random() * list.length)];
+  document.getElementById('fbText').style.color  = ok ? '#52d68a' : '#ff8c42';
+  document.getElementById('fbPts').textContent   = ok ? '+10 Punkte' : '';
+  ov.classList.add('show');
+  setTimeout(function() { ov.classList.remove('show'); }, ok ? 900 : 700);
+}
+
+// ── Level up ──
+function showLevelUp() {
+  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
+  var dinoIdx = lvl.dinoPool[lvl.dinoPool.length - 1];
+  document.getElementById('luDino').textContent   = DINOS[dinoIdx];
+  document.getElementById('luTitle').textContent  = 'Super! Level ' + state.level + '!';
+  document.getElementById('luUnlock').textContent = lvl.unlock;
+  document.getElementById('levelupOverlay').classList.add('show');
+  launchConfetti(30);
+}
+function closeLevelUp() {
+  document.getElementById('levelupOverlay').classList.remove('show');
+  newRound();
+}
+
+// ── Win ──
+function showWin() {
+  showScreen('winScreen');
+  document.getElementById('winName').textContent    = state.playerName;
+  document.getElementById('finalScore').textContent = state.score;
+  document.getElementById('finalCorrect').textContent = state.correct;
+  launchConfetti(80);
+}
+
+// ── Confetti ──
+function launchConfetti(count) {
+  var colors = ['#ffe94d','#ff8c42','#52d68a','#74c0fc','#da77f2','#ff4d6d','#fff'];
+  for (var i = 0; i < count; i++) {
+    (function(delay) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'confetti-p';
+        var c = colors[Math.floor(Math.random() * colors.length)];
+        var w = 6 + Math.random() * 10;
+        el.style.cssText = 'left:' + (Math.random() * 100) + 'vw;top:-10px;background:' + c
+          + ';width:' + w + 'px;height:' + w + 'px;border-radius:' + (Math.random() > 0.5 ? '50%' : '2px')
+          + ';animation-duration:' + (1.5 + Math.random() * 2) + 's;';
+        document.body.appendChild(el);
+        setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
+      }, delay);
+    })(i * 35);
+  }
+}
+
+// ── Sparkles from button ──
+function spawnSparkles(btn) {
+  var rect = btn.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2;
+  var cy = rect.top  + rect.height / 2;
+  var emojis = ['\u2B50','\u2728','\u{1F4AB}','\u2764','\u{1F389}'];
+  for (var i = 0; i < 6; i++) {
+    var el = document.createElement('div');
+    el.className = 'sparkle';
+    el.textContent = emojis[i % emojis.length];
+    var angle = (i / 6) * Math.PI * 2;
+    var dist = 60 + Math.random() * 50;
+    el.style.left = cx + 'px';
+    el.style.top  = cy + 'px';
+    el.style.setProperty('--dx', Math.round(Math.cos(angle) * dist) + 'px');
+    el.style.setProperty('--dy', Math.round(Math.sin(angle) * dist) + 'px');
+    document.body.appendChild(el);
+    setTimeout(function(e) { if (e.parentNode) e.parentNode.removeChild(e); }, 900, el);
+  }
+}
+
+// ── Restart ──
+function restartGame() { showScreen('startScreen'); }
+</script>
 </body>
 </html>
