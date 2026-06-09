@@ -481,6 +481,44 @@ body {
   to   { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
 }
 
+/* ── Back button ── */
+.back-btn {
+  position: fixed; top: 14px; left: 14px; z-index: 150;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .85rem;
+  background: rgba(14,42,14,.88); color: var(--muted);
+  border: 1.5px solid var(--leaf); border-radius: 10px;
+  padding: 8px 14px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: all .2s; backdrop-filter: blur(4px);
+}
+.back-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+
+/* ── Profile badge ── */
+.profile-badge {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1.5px solid var(--leaf2);
+  border-radius: 14px; padding: 10px 16px;
+  max-width: 320px; width: 100%;
+}
+.pb-avatar { font-size: 2rem; }
+.pb-name   { font-weight: 800; font-size: 1rem; color: var(--green); }
+.pb-sub    { font-size: .72rem; color: var(--muted); font-weight: 600; }
+.pb-nosave {
+  font-size: .75rem; color: var(--muted); font-weight: 700; text-align: center;
+  background: var(--card); border: 1.5px solid var(--leaf);
+  border-radius: 10px; padding: 8px 16px; max-width: 320px; width: 100%;
+}
+
+/* ── Win screen home button ── */
+.win-btn-home {
+  font-family: 'Fredoka One', cursive; font-size: 1.4rem;
+  background: var(--card2); color: var(--muted);
+  border: 2px solid var(--leaf); border-radius: 16px;
+  padding: 14px 32px; cursor: pointer;
+  width: 100%; max-width: 320px; transition: all .15s;
+}
+.win-btn-home:hover { border-color: var(--yellow); color: var(--yellow); }
+
 @media (max-width: 400px) {
   .num-btn  { font-size: 2rem; padding: 12px 0; }
   .dino-item { font-size: 2.2rem; }
@@ -490,6 +528,9 @@ body {
 <body>
 <div class="bg"></div>
 <div class="leaf-layer" id="leafLayer"></div>
+
+<!-- Back button -->
+<button class="back-btn" onclick="goHome()">&#x2190; Hauptseite</button>
 
 <!-- Feedback overlay -->
 <div class="feedback-overlay" id="feedbackOverlay">
@@ -506,15 +547,16 @@ body {
   <button class="lu-btn" onclick="closeLevelUp()">Weiter &#x1F44D;</button>
 </div>
 
+<!-- Back button -->
+<button class="back-btn" onclick="goHome()">&#x2190; Hauptseite</button>
+
 <!-- ════ START ════ -->
 <div class="screen active" id="startScreen">
   <div class="start-dino">&#x1F996;</div>
   <h1 class="game-title">Dino Zahlen-Jagd</h1>
   <p class="game-sub">Zahle die Dinos und tippe die richtige Zahl!</p>
-  <div class="name-group">
-    <label>Dein Name</label>
-    <input class="name-input" id="playerName" type="text" placeholder="z.B. Ben" maxlength="14" />
-  </div>
+  <!-- Profile badge injected here by JS -->
+  <div id="profileBadge"></div>
   <button class="start-btn" onclick="startGame()">Los geht&#x2019;s! &#x1F996;</button>
 </div>
 
@@ -582,285 +624,203 @@ body {
     </div>
   </div>
   <button class="win-btn" onclick="restartGame()">Nochmal spielen! &#x1F996;</button>
+  <button class="win-btn" style="background:rgba(14,42,14,.8);color:var(--green);border:2px solid var(--green);box-shadow:0 4px 0 #0a1e0a;margin-top:0" onclick="goHome()">&#x1F3E0; Zur Hauptseite</button>
 </div>
 
 <script>
-// ── Dino roster — different dinos unlock per level ──
 var DINOS = [
-  '\u{1F996}', // sauropod (T-Rex face)
-  '\u{1F995}', // sauropod long neck
-  '\u{1F40A}', // croc (close enough!)
-  '\u{1F422}', // turtle
-  '\u{1F438}', // frog
-  '\u{1F40D}', // snake
-  '\u{1F98E}', // lizard
-  '\u{1F989}', // owl (prehistoric bird)
+  '\u{1F996}','\u{1F995}','\u{1F40A}','\u{1F422}',
+  '\u{1F438}','\u{1F40D}','\u{1F98E}','\u{1F989}'
 ];
-
-// Level config: which dinos available, max count, rounds
 var LEVELS = [
-  {maxCount:3, rounds:5, dinoPool:[0],       name:'Dino-Anfaenger',  unlock:'Du kennst den ersten Dino!'},
-  {maxCount:4, rounds:5, dinoPool:[0,1],     name:'Dino-Entdecker',  unlock:'Langer Hals freigeschaltet!'},
-  {maxCount:5, rounds:5, dinoPool:[0,1,2],   name:'Dino-Jaeger',     unlock:'Krokodil-Freund!'},
-  {maxCount:5, rounds:5, dinoPool:[0,1,2,3], name:'Dino-Forscher',   unlock:'Schildkroete dabei!'},
-  {maxCount:6, rounds:5, dinoPool:[0,1,2,3,4], name:'Dino-Profi',    unlock:'Frosch huepft mit!'},
-  {maxCount:7, rounds:5, dinoPool:[0,1,2,3,4,5], name:'Dino-Experte',unlock:'Schlange entdeckt!'},
-  {maxCount:8, rounds:5, dinoPool:[0,1,2,3,4,5,6], name:'Dino-Held', unlock:'Eidechse dabei!'},
-  {maxCount:9, rounds:5, dinoPool:[0,1,2,3,4,5,6,7], name:'Dino-Meister', unlock:'Alle Dinos vereint!'},
+  {maxCount:3, rounds:5, dinoPool:[0],             unlock:'Du kennst den ersten Dino!'},
+  {maxCount:4, rounds:5, dinoPool:[0,1],           unlock:'Langer Hals freigeschaltet!'},
+  {maxCount:5, rounds:5, dinoPool:[0,1,2],         unlock:'Krokodil-Freund!'},
+  {maxCount:5, rounds:5, dinoPool:[0,1,2,3],       unlock:'Schildkroete dabei!'},
+  {maxCount:6, rounds:5, dinoPool:[0,1,2,3,4],     unlock:'Frosch huepft mit!'},
+  {maxCount:7, rounds:5, dinoPool:[0,1,2,3,4,5],   unlock:'Schlange entdeckt!'},
+  {maxCount:8, rounds:5, dinoPool:[0,1,2,3,4,5,6], unlock:'Eidechse dabei!'},
+  {maxCount:9, rounds:5, dinoPool:[0,1,2,3,4,5,6,7], unlock:'Alle Dinos vereint!'}
 ];
-
 var TOTAL_LEVELS = LEVELS.length;
+var STORAGE_KEY = 'matheArcadeProfiles';
+var ACTIVE_KEY  = 'matheArcadeActiveProfile';
+var GAME_ID     = 'dino';
 
-var state = {
-  level: 1,
-  round: 1,
-  score: 0,
-  correct: 0,
-  wrong: 0,
-  currentCount: 0,
-  playerName: 'Dino-Jaeger',
-  busy: false,
-};
-
+var state = { level:1, round:1, score:0, correct:0, wrong:0, currentCount:0, playerName:'Dino-Jaeger', busy:false };
 var MSG_RIGHT = ['Super!','Toll gemacht!','Klasse!','Richtig!','Wow!','Mega!','Ja!','Perfekt!'];
 var MSG_WRONG = ['Fast!','Nochmal!','Probier nochmal!','Du schaffst das!'];
 var CHEER_EMOJIS = ['\u2B50','\u{1F31F}','\u2728','\u{1F389}','\u{1F4A5}'];
 
-// ── Init background leaves ──
-(function initLeaves() {
-  var L = document.getElementById('leafLayer');
-  var items = ['\u{1F333}','\u{1F334}','\u{1F332}','\u{1F343}','\u{1F33F}'];
-  for (var i = 0; i < 12; i++) {
-    var el = document.createElement('div');
-    el.className = 'leaf';
-    el.textContent = items[i % items.length];
-    el.style.left = (Math.random() * 100) + '%';
-    el.style.fontSize = (1.5 + Math.random() * 2.5) + 'rem';
-    el.style.opacity = (0.08 + Math.random() * 0.14).toString();
-    el.style.animationDuration = (12 + Math.random() * 16) + 's';
-    el.style.animationDelay = (-Math.random() * 20) + 's';
+// ── Profile helpers ──
+function loadProfiles(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{};}catch(e){return{};} }
+function saveProfiles(p){ localStorage.setItem(STORAGE_KEY,JSON.stringify(p)); }
+function getActiveId(){ return localStorage.getItem(ACTIVE_KEY)||null; }
+function getActiveProfile(){ var p=loadProfiles(),id=getActiveId(); return(id&&p[id])?p[id]:null; }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function saveGameResult(score, correct) {
+  var id=getActiveId(); if(!id) return;
+  var profiles=loadProfiles(); if(!profiles[id]) return;
+  if(!profiles[id].games) profiles[id].games={};
+  var g=profiles[id].games[GAME_ID]||{bestScore:0,totalRight:0,gamesPlayed:0};
+  g.bestScore=Math.max(g.bestScore,score);
+  g.totalRight+=correct;
+  g.gamesPlayed=(g.gamesPlayed||0)+1;
+  profiles[id].games[GAME_ID]=g;
+  saveProfiles(profiles);
+}
+
+function renderProfileBadge() {
+  var el=document.getElementById('profileBadge'), p=getActiveProfile();
+  if(p){
+    var g=(p.games&&p.games[GAME_ID])||{}, best=g.bestScore||0;
+    el.innerHTML='<div class="profile-badge"><div class="pb-avatar">'+p.avatar+'</div>'
+      +'<div><div class="pb-name">'+escHtml(p.name)+'</div>'
+      +'<div class="pb-sub">'+(best>0?'\u2B50 Bestpunktzahl: '+best:'Noch nicht gespielt')+'</div></div></div>';
+  } else {
+    el.innerHTML='<div class="pb-nosave">&#x26A0; Kein Profil &mdash; Punkte werden nicht gespeichert.<br>Profil auf der <a href="index.html" style="color:var(--green)">Hauptseite</a> anlegen!</div>';
+  }
+}
+
+function goHome(){ window.location.href='index.html'; }
+
+// ── Leaves ──
+(function(){
+  var L=document.getElementById('leafLayer');
+  var items=['\u{1F333}','\u{1F334}','\u{1F332}','\u{1F343}','\u{1F33F}'];
+  for(var i=0;i<12;i++){
+    var el=document.createElement('div'); el.className='leaf';
+    el.textContent=items[i%items.length];
+    el.style.left=(Math.random()*100)+'%';
+    el.style.fontSize=(1.5+Math.random()*2.5)+'rem';
+    el.style.opacity=(0.08+Math.random()*0.14).toString();
+    el.style.animationDuration=(12+Math.random()*16)+'s';
+    el.style.animationDelay=(-Math.random()*20)+'s';
     L.appendChild(el);
   }
+  renderProfileBadge();
 })();
 
-// ── Screen helper ──
-function showScreen(id) {
-  var screens = document.querySelectorAll('.screen');
-  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
-  document.getElementById(id).classList.add('active');
-}
+function showScreen(id){ var ss=document.querySelectorAll('.screen'); for(var i=0;i<ss.length;i++) ss[i].classList.remove('active'); document.getElementById(id).classList.add('active'); }
 
-// ── Start game ──
 function startGame() {
-  var n = document.getElementById('playerName').value.trim();
-  state.playerName = n || 'Dino-Jaeger';
-  state.level = 1; state.round = 1;
-  state.score = 0; state.correct = 0; state.wrong = 0;
-  state.busy = false;
-  showScreen('gameScreen');
-  updateHUD();
-  newRound();
+  var p=getActiveProfile();
+  state.playerName = p ? p.name : 'Dino-Jaeger';
+  state.level=1; state.round=1; state.score=0; state.correct=0; state.wrong=0; state.busy=false;
+  showScreen('gameScreen'); updateHUD(); newRound();
 }
 
-// ── New round ──
 function newRound() {
-  state.busy = false;
-  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
-
-  // Pick random count
-  var count = Math.floor(Math.random() * lvl.maxCount) + 1;
-  state.currentCount = count;
-
-  // Pick which dino to show this round (random from pool)
-  var dinoIdx = lvl.dinoPool[Math.floor(Math.random() * lvl.dinoPool.length)];
-  var dinoEmoji = DINOS[dinoIdx];
-
-  // Build grid
-  var grid = document.getElementById('dinoGrid');
-  grid.innerHTML = '';
-  for (var i = 0; i < count; i++) {
-    var el = document.createElement('div');
-    el.className = 'dino-item';
-    el.textContent = dinoEmoji;
-    el.style.animationDelay = (i * 0.07) + 's';
+  state.busy=false;
+  var lvl=LEVELS[Math.min(state.level-1,LEVELS.length-1)];
+  var count=Math.floor(Math.random()*lvl.maxCount)+1;
+  state.currentCount=count;
+  var dinoIdx=lvl.dinoPool[Math.floor(Math.random()*lvl.dinoPool.length)];
+  var dinoEmoji=DINOS[dinoIdx];
+  var grid=document.getElementById('dinoGrid'); grid.innerHTML='';
+  for(var i=0;i<count;i++){
+    var el=document.createElement('div'); el.className='dino-item';
+    el.textContent=dinoEmoji; el.style.animationDelay=(i*0.07)+'s';
     grid.appendChild(el);
   }
-
-  // Update progress
-  updateVine();
-  updateHUD();
-
-  // Highlight buttons
-  resetNumpad();
+  updateVine(); updateHUD(); resetNumpad();
 }
 
-// ── Guess ──
 function guess(n) {
-  if (state.busy) return;
-  state.busy = true;
-
-  var btn = document.querySelectorAll('.num-btn')[n - 1];
-
-  if (n === state.currentCount) {
-    // CORRECT
-    state.correct++;
-    state.score += 10;
-    btn.classList.add('correct-flash');
-
-    // Highlight all dinos
-    var dinos = document.querySelectorAll('.dino-item');
-    for (var i = 0; i < dinos.length; i++) {
-      (function(d, delay) {
-        setTimeout(function() { d.classList.add('highlight'); }, delay);
-      })(dinos[i], i * 60);
-    }
-
-    // Sparkles at button
-    spawnSparkles(btn);
-    showFeedback(true);
-    updateHUD();
-
-    setTimeout(function() {
-      btn.classList.remove('correct-flash');
-      nextRound();
-    }, 1100);
-
+  if(state.busy) return; state.busy=true;
+  var btn=document.querySelectorAll('.num-btn')[n-1];
+  if(n===state.currentCount){
+    state.correct++; state.score+=10; btn.classList.add('correct-flash');
+    var dinos=document.querySelectorAll('.dino-item');
+    for(var i=0;i<dinos.length;i++){(function(d,delay){setTimeout(function(){d.classList.add('highlight');},delay);})(dinos[i],i*60);}
+    spawnSparkles(btn); showFeedback(true); updateHUD();
+    setTimeout(function(){btn.classList.remove('correct-flash'); nextRound();},1100);
   } else {
-    // WRONG
-    state.wrong++;
-    btn.classList.add('wrong-flash');
-    showFeedback(false);
-    setTimeout(function() {
-      btn.classList.remove('wrong-flash');
-      state.busy = false;
-    }, 700);
+    state.wrong++; btn.classList.add('wrong-flash'); showFeedback(false);
+    setTimeout(function(){btn.classList.remove('wrong-flash');state.busy=false;},700);
   }
 }
 
-// ── Next round ──
 function nextRound() {
-  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
-  if (state.round >= lvl.rounds) {
-    // Level complete
-    state.round = 1;
-    if (state.level >= TOTAL_LEVELS) {
-      setTimeout(showWin, 400);
-    } else {
-      state.level++;
-      updateVine();
-      showLevelUp();
-    }
-  } else {
-    state.round++;
-    newRound();
-  }
+  var lvl=LEVELS[Math.min(state.level-1,LEVELS.length-1)];
+  if(state.round>=lvl.rounds){
+    state.round=1;
+    if(state.level>=TOTAL_LEVELS){ setTimeout(showWin,400); }
+    else { state.level++; updateVine(); showLevelUp(); }
+  } else { state.round++; newRound(); }
 }
 
-// ── HUD ──
-function updateHUD() {
-  document.getElementById('scoreDisplay').textContent = state.score;
-  document.getElementById('levelDisplay').textContent = state.level;
-  var n = Math.min(5, Math.floor((state.level - 1) * 0.7));
-  document.getElementById('starsDisplay').textContent =
-    '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+function updateHUD(){
+  document.getElementById('scoreDisplay').textContent=state.score;
+  document.getElementById('levelDisplay').textContent=state.level;
+  var n=Math.min(5,Math.floor((state.level-1)*0.7));
+  document.getElementById('starsDisplay').textContent='\u2605'.repeat(n)+'\u2606'.repeat(5-n);
+}
+function updateVine(){
+  var lvl=LEVELS[Math.min(state.level-1,LEVELS.length-1)];
+  var pct=((state.round-1)/lvl.rounds)*100;
+  document.getElementById('vineFill').style.width=pct+'%';
+  document.getElementById('vineLabel').textContent='Runde '+state.round+' von '+lvl.rounds+' (Level '+state.level+')';
+}
+function resetNumpad(){ var btns=document.querySelectorAll('.num-btn'); for(var i=0;i<btns.length;i++) btns[i].classList.remove('correct-flash','wrong-flash'); }
+
+function showFeedback(ok){
+  var ov=document.getElementById('feedbackOverlay'), list=ok?MSG_RIGHT:MSG_WRONG;
+  document.getElementById('fbEmoji').textContent=ok?CHEER_EMOJIS[Math.floor(Math.random()*CHEER_EMOJIS.length)]:'\u{1F914}';
+  document.getElementById('fbText').textContent=list[Math.floor(Math.random()*list.length)];
+  document.getElementById('fbText').style.color=ok?'#52d68a':'#ff8c42';
+  document.getElementById('fbPts').textContent=ok?'+10 Punkte':'';
+  ov.classList.add('show'); setTimeout(function(){ov.classList.remove('show');},ok?900:700);
 }
 
-// ── Vine progress ──
-function updateVine() {
-  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
-  var pct = ((state.round - 1) / lvl.rounds) * 100;
-  document.getElementById('vineFill').style.width = pct + '%';
-  document.getElementById('vineLabel').textContent =
-    'Runde ' + state.round + ' von ' + lvl.rounds + ' (Level ' + state.level + ')';
-}
-
-// ── Numpad reset ──
-function resetNumpad() {
-  var btns = document.querySelectorAll('.num-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.remove('correct-flash', 'wrong-flash');
-  }
-}
-
-// ── Feedback overlay ──
-function showFeedback(ok) {
-  var ov = document.getElementById('feedbackOverlay');
-  var list = ok ? MSG_RIGHT : MSG_WRONG;
-  document.getElementById('fbEmoji').textContent = ok ? CHEER_EMOJIS[Math.floor(Math.random() * CHEER_EMOJIS.length)] : '\u{1F914}';
-  document.getElementById('fbText').textContent  = list[Math.floor(Math.random() * list.length)];
-  document.getElementById('fbText').style.color  = ok ? '#52d68a' : '#ff8c42';
-  document.getElementById('fbPts').textContent   = ok ? '+10 Punkte' : '';
-  ov.classList.add('show');
-  setTimeout(function() { ov.classList.remove('show'); }, ok ? 900 : 700);
-}
-
-// ── Level up ──
-function showLevelUp() {
-  var lvl = LEVELS[Math.min(state.level - 1, LEVELS.length - 1)];
-  var dinoIdx = lvl.dinoPool[lvl.dinoPool.length - 1];
-  document.getElementById('luDino').textContent   = DINOS[dinoIdx];
-  document.getElementById('luTitle').textContent  = 'Super! Level ' + state.level + '!';
-  document.getElementById('luUnlock').textContent = lvl.unlock;
+function showLevelUp(){
+  var lvl=LEVELS[Math.min(state.level-1,LEVELS.length-1)];
+  var dinoIdx=lvl.dinoPool[lvl.dinoPool.length-1];
+  document.getElementById('luDino').textContent=DINOS[dinoIdx];
+  document.getElementById('luTitle').textContent='Super! Level '+state.level+'!';
+  document.getElementById('luUnlock').textContent=lvl.unlock;
   document.getElementById('levelupOverlay').classList.add('show');
   launchConfetti(30);
 }
-function closeLevelUp() {
-  document.getElementById('levelupOverlay').classList.remove('show');
-  newRound();
-}
+function closeLevelUp(){ document.getElementById('levelupOverlay').classList.remove('show'); newRound(); }
 
-// ── Win ──
-function showWin() {
+function showWin(){
+  saveGameResult(state.score, state.correct);
   showScreen('winScreen');
-  document.getElementById('winName').textContent    = state.playerName;
-  document.getElementById('finalScore').textContent = state.score;
-  document.getElementById('finalCorrect').textContent = state.correct;
+  var p=getActiveProfile();
+  document.getElementById('winName').textContent = p ? p.avatar+' '+p.name : state.playerName;
+  document.getElementById('finalScore').textContent=state.score;
+  document.getElementById('finalCorrect').textContent=state.correct;
   launchConfetti(80);
 }
 
-// ── Confetti ──
-function launchConfetti(count) {
-  var colors = ['#ffe94d','#ff8c42','#52d68a','#74c0fc','#da77f2','#ff4d6d','#fff'];
-  for (var i = 0; i < count; i++) {
-    (function(delay) {
-      setTimeout(function() {
-        var el = document.createElement('div');
-        el.className = 'confetti-p';
-        var c = colors[Math.floor(Math.random() * colors.length)];
-        var w = 6 + Math.random() * 10;
-        el.style.cssText = 'left:' + (Math.random() * 100) + 'vw;top:-10px;background:' + c
-          + ';width:' + w + 'px;height:' + w + 'px;border-radius:' + (Math.random() > 0.5 ? '50%' : '2px')
-          + ';animation-duration:' + (1.5 + Math.random() * 2) + 's;';
-        document.body.appendChild(el);
-        setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
-      }, delay);
-    })(i * 35);
-  }
+function launchConfetti(count){
+  var colors=['#ffe94d','#ff8c42','#52d68a','#74c0fc','#da77f2','#ff4d6d','#fff'];
+  for(var i=0;i<count;i++){(function(delay){setTimeout(function(){
+    var el=document.createElement('div'); el.className='confetti-p';
+    var c=colors[Math.floor(Math.random()*colors.length)], w=6+Math.random()*10;
+    el.style.cssText='left:'+(Math.random()*100)+'vw;top:-10px;background:'+c+';width:'+w+'px;height:'+w+'px;border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.5+Math.random()*2)+'s;';
+    document.body.appendChild(el); setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3500);
+  },delay);})(i*35);}
 }
 
-// ── Sparkles from button ──
-function spawnSparkles(btn) {
-  var rect = btn.getBoundingClientRect();
-  var cx = rect.left + rect.width / 2;
-  var cy = rect.top  + rect.height / 2;
-  var emojis = ['\u2B50','\u2728','\u{1F4AB}','\u2764','\u{1F389}'];
-  for (var i = 0; i < 6; i++) {
-    var el = document.createElement('div');
-    el.className = 'sparkle';
-    el.textContent = emojis[i % emojis.length];
-    var angle = (i / 6) * Math.PI * 2;
-    var dist = 60 + Math.random() * 50;
-    el.style.left = cx + 'px';
-    el.style.top  = cy + 'px';
-    el.style.setProperty('--dx', Math.round(Math.cos(angle) * dist) + 'px');
-    el.style.setProperty('--dy', Math.round(Math.sin(angle) * dist) + 'px');
+function spawnSparkles(btn){
+  var rect=btn.getBoundingClientRect(), cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  var emojis=['\u2B50','\u2728','\u{1F4AB}','\u2764','\u{1F389}'];
+  for(var i=0;i<6;i++){
+    var el=document.createElement('div'); el.className='sparkle';
+    el.textContent=emojis[i%emojis.length];
+    var angle=(i/6)*Math.PI*2, dist=60+Math.random()*50;
+    el.style.left=cx+'px'; el.style.top=cy+'px';
+    el.style.setProperty('--dx',Math.round(Math.cos(angle)*dist)+'px');
+    el.style.setProperty('--dy',Math.round(Math.sin(angle)*dist)+'px');
     document.body.appendChild(el);
-    setTimeout(function(e) { if (e.parentNode) e.parentNode.removeChild(e); }, 900, el);
+    setTimeout(function(e){if(e.parentNode)e.parentNode.removeChild(e);},900,el);
   }
 }
 
-// ── Restart ──
-function restartGame() { showScreen('startScreen'); }
+function restartGame(){ showScreen('startScreen'); renderProfileBadge(); }
 </script>
 </body>
 </html>
