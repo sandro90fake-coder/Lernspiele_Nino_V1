@@ -6,10 +6,10 @@
 <title>Auto Mathe-Rennen</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap');
-:root {
-  --red:#e63946; --orange:#ff6b35; --yellow:#ffd60a;
-  --dark:#0d0d0d; --card:#16213e; --card2:#0f3460;
-  --text:#f0f4f8; --muted:#8899aa; --green:#06d6a0; --blue:#4cc9f0;
+:root{
+  --red:#e63946;--orange:#ff6b35;--yellow:#ffd60a;
+  --dark:#0d0d0d;--card:#16213e;--card2:#0f3460;
+  --text:#f0f4f8;--muted:#8899aa;--green:#06d6a0;--blue:#4cc9f0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
@@ -19,15 +19,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 @keyframes twinkle{0%{opacity:.1;transform:scale(1)}100%{opacity:.8;transform:scale(1.3)}}
 .screen{display:none;position:relative;z-index:1}
 .screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-#startScreen{text-align:center;gap:20px}
+#startScreen{text-align:center;gap:18px}
+
+/* back btn */
+.back-btn{position:fixed;top:14px;left:14px;z-index:50;font-family:'Nunito',sans-serif;font-weight:800;font-size:.85rem;background:rgba(15,52,96,.85);color:var(--muted);border:1.5px solid var(--card2);border-radius:10px;padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;backdrop-filter:blur(4px)}
+.back-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+
+/* profile badge */
+.profile-badge{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--card2);border-radius:12px;padding:10px 16px;max-width:320px;width:100%}
+.pb-avatar{font-size:2rem}.pb-name{font-weight:800;font-size:1rem;color:var(--green)}.pb-sub{font-size:.72rem;color:var(--muted);font-weight:600}
+.pb-nosave{font-size:.75rem;color:var(--muted);font-weight:700;text-align:center;background:var(--card);border:1.5px solid var(--card2);border-radius:10px;padding:8px 16px;max-width:320px;width:100%}
+
 .game-title{font-family:'Bangers',cursive;font-size:clamp(2.8rem,8vw,5rem);letter-spacing:3px;color:var(--yellow);text-shadow:4px 4px 0 var(--red),8px 8px 0 rgba(230,57,70,.3);line-height:1}
 .game-subtitle{font-size:1.1rem;color:var(--muted);font-weight:600}
 .big-car{font-size:5rem;filter:drop-shadow(0 0 30px rgba(255,214,10,.5));animation:carBob 2s ease-in-out infinite}
 @keyframes carBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
-.input-group{display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px}
-.input-group label{font-weight:700;font-size:.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.input-group input{background:var(--card);border:2px solid var(--card2);border-radius:12px;padding:12px 16px;font-size:1.1rem;font-family:'Nunito',sans-serif;color:var(--text);width:100%;transition:border-color .2s}
-.input-group input:focus{outline:none;border-color:var(--yellow)}
 .mode-group{display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px}
 .mode-group>label{font-weight:700;font-size:.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 .mode-btns{display:flex;gap:8px}
@@ -36,14 +42,16 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .option-row{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--card2);border-radius:12px;padding:12px 16px;width:100%;max-width:320px;cursor:pointer;transition:border-color .2s;user-select:none}
 .option-row:hover{border-color:var(--orange)}
 .option-row.enabled{border-color:var(--orange);background:rgba(255,107,53,.1)}
+.option-row.enabled-blue{border-color:var(--blue) !important;background:rgba(76,201,240,.1) !important}
 .toggle{width:40px;height:22px;border-radius:11px;background:var(--card2);position:relative;transition:background .2s;flex-shrink:0}
 .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:all .2s}
-.option-row.enabled .toggle{background:var(--orange)}
-.option-row.enabled .toggle::after{left:21px;background:#fff}
+.option-row.enabled .toggle,.option-row.enabled-blue .toggle{background:var(--orange)}
+.option-row.enabled-blue .toggle{background:var(--blue) !important}
+.option-row.enabled .toggle::after,.option-row.enabled-blue .toggle::after{left:21px;background:#fff}
 .option-label{font-weight:700;font-size:.95rem}
 .option-desc{font-size:.8rem;color:var(--muted)}
 
-/* Digit slider */
+/* digit slider */
 .digit-group{display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px}
 .digit-group>label{font-weight:700;font-size:.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 .digit-slider-row{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--card2);border-radius:12px;padding:12px 14px;transition:border-color .2s;cursor:pointer;user-select:none}
@@ -53,26 +61,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .digit-knob{position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--green),#059669);box-shadow:0 2px 8px rgba(6,214,160,.5);transition:left .35s cubic-bezier(.34,1.56,.64,1),background .25s}
 .digit-knob.double{left:50%;background:linear-gradient(135deg,var(--orange),var(--red));box-shadow:0 2px 8px rgba(255,107,53,.5)}
 .digit-knob.both{left:100%;background:linear-gradient(135deg,var(--yellow),var(--orange));box-shadow:0 2px 8px rgba(255,214,10,.5)}
-.digit-label-left.active{color:var(--green)}
-.digit-label-right.active{color:var(--orange)}
+.digit-label-left.active{color:var(--green)}.digit-label-right.active{color:var(--orange)}
 .digit-label-left.semi,.digit-label-right.semi{color:var(--yellow)}
 .digit-preview{font-size:.88rem;color:var(--blue);font-weight:700;text-align:center;font-family:'Bangers',cursive;letter-spacing:1px;min-height:1.4em}
 
-.btn-primary{font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;border:none;border-radius:16px;padding:14px 48px;cursor:pointer;box-shadow:0 6px 0 #9b1a1a,0 8px 20px rgba(230,57,70,.4);transition:all .15s;transform:translateY(0);width:100%;max-width:320px}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 9px 0 #9b1a1a,0 12px 30px rgba(230,57,70,.5)}
+/* count mode disabled state */
+.digit-group.dimmed,.option-row.dimmed{opacity:.35;pointer-events:none}
+
+.btn-primary{font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;border:none;border-radius:16px;padding:14px 48px;cursor:pointer;box-shadow:0 6px 0 #9b1a1a,0 8px 20px rgba(230,57,70,.4);transition:all .15s;width:100%;max-width:320px}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 9px 0 #9b1a1a}
 .btn-primary:active{transform:translateY(3px);box-shadow:0 3px 0 #9b1a1a}
 
-/* Game screen */
-#gameScreen{gap:0;justify-content:flex-start;padding:12px 16px 20px}
+/* game screen */
+#gameScreen{gap:0;justify-content:flex-start;padding:56px 12px 20px}
 .top-bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;padding:10px 14px;background:var(--card);border-radius:14px;border:1px solid var(--card2);margin-bottom:12px}
 .stat-box{display:flex;flex-direction:column;align-items:center}
 .stat-val{font-family:'Bangers',cursive;font-size:1.6rem;color:var(--yellow);line-height:1}
 .stat-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
-.stars-display{display:flex;gap:4px;font-size:1.2rem}
+.stars-display{font-size:1.2rem}
 .mini-mode{display:flex;gap:6px;margin-bottom:10px;width:100%;max-width:500px}
 .mini-mode-btn{flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--card2);background:var(--card);color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s}
 .mini-mode-btn.active{border-color:var(--yellow);color:var(--yellow);background:rgba(255,214,10,.1)}
-.track-area{width:100%;max-width:500px;background:var(--card);border-radius:16px;border:2px solid var(--card2);padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.track-area{width:100%;max-width:500px;background:var(--card);border-radius:16px;border:2px solid var(--card2);padding:16px;margin-bottom:10px;position:relative;overflow:hidden}
 .car-name{font-family:'Bangers',cursive;font-size:1.1rem;color:var(--orange);letter-spacing:1px;margin-bottom:8px;text-align:center}
 .progress-bar-wrap{background:rgba(255,255,255,.08);border-radius:20px;height:18px;width:100%;position:relative;overflow:visible;margin-bottom:6px}
 .progress-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow));transition:width .6s cubic-bezier(.34,1.56,.64,1);position:relative}
@@ -84,10 +94,27 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .speed-lines{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:14px}
 .speed-line{position:absolute;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,214,10,.4));animation:speedLine .6s linear infinite;opacity:0}
 @keyframes speedLine{from{transform:translateX(100%);opacity:.6}to{transform:translateX(-200%);opacity:0}}
-.question-card{width:100%;max-width:500px;background:var(--card);border-radius:20px;border:2px solid var(--card2);padding:20px;text-align:center;margin-bottom:12px}
-.question-type{font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.question-text{font-family:'Bangers',cursive;font-size:clamp(2rem,8vw,3.5rem);color:var(--text);letter-spacing:2px;margin-bottom:16px;line-height:1.1}
+
+/* ── Car count scene (Zaehl-Modus) ── */
+.count-scene{width:100%;max-width:500px;background:var(--card);border-radius:20px;border:2.5px solid var(--blue);padding:18px 14px 14px;margin-bottom:10px;text-align:center;display:none;position:relative;overflow:hidden}
+.count-scene.visible{display:block}
+.count-scene-label{font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;color:var(--blue);margin-bottom:10px}
+.count-road{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;min-height:64px}
+.count-car{font-size:clamp(1.8rem,6vw,2.6rem);animation:countCarPop .35s cubic-bezier(.34,1.56,.64,1) both;cursor:default;transition:transform .15s;display:inline-block}
+.count-car:hover{transform:scale(1.2) rotate(-5deg)}
+@keyframes countCarPop{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.count-car.pop{animation:countCarBig .5s ease forwards}
+@keyframes countCarBig{0%,100%{transform:scale(1)}40%{transform:scale(1.5) rotate(-10deg)}}
+/* road stripes under cars */
+.count-road-strip{height:6px;background:repeating-linear-gradient(90deg,var(--card2) 0,var(--card2) 20px,transparent 20px,transparent 30px);border-radius:3px;margin-top:8px;opacity:.5}
+
+/* question card */
+.question-card{width:100%;max-width:500px;background:var(--card);border-radius:20px;border:2px solid var(--card2);padding:18px 20px;text-align:center;margin-bottom:10px}
+.question-type{font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.question-text{font-family:'Bangers',cursive;font-size:clamp(2rem,8vw,3.5rem);color:var(--text);letter-spacing:2px;margin-bottom:10px;line-height:1.1}
 .question-hint{font-size:.85rem;color:var(--muted);font-weight:600}
+
+/* answer */
 .answer-area{width:100%;max-width:500px;display:flex;gap:10px;margin-bottom:10px}
 .answer-input{flex:1;background:var(--card);border:2.5px solid var(--card2);border-radius:14px;padding:14px 18px;font-family:'Bangers',cursive;font-size:2rem;letter-spacing:2px;color:var(--text);text-align:center;transition:border-color .2s}
 .answer-input:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 3px rgba(255,214,10,.15)}
@@ -98,13 +125,25 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .submit-btn{font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:1px;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;border:none;border-radius:14px;padding:0 24px;cursor:pointer;box-shadow:0 4px 0 #9b1a1a;transition:all .15s}
 .submit-btn:hover{transform:translateY(-2px)}
 .submit-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #9b1a1a}
+
+/* timer */
 .timer-bar-wrap{width:100%;max-width:500px;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin-bottom:8px;display:none}
 .timer-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width .1s linear}
+
+/* badges */
+.mode-badges{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
+.game-badge{font-size:.72rem;font-weight:800;border-radius:8px;padding:3px 10px;display:none}
+.game-badge.visible{display:inline-flex;align-items:center;gap:4px}
+.badge-turbo{color:var(--orange);background:rgba(255,107,53,.15);border:1.5px solid var(--orange)}
+.badge-count{color:var(--blue);background:rgba(76,201,240,.15);border:1.5px solid var(--blue)}
+
+/* feedback */
 .feedback-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:var(--card2);border-radius:20px;padding:20px 36px;text-align:center;z-index:100;pointer-events:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;min-width:200px}
 .feedback-toast.show{transform:translate(-50%,-50%) scale(1);opacity:1}
-.ft-emoji{font-size:3rem}
-.ft-text{font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:1px}
+.ft-emoji{font-size:3rem}.ft-text{font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:1px}
 .ft-points{font-size:.9rem;color:var(--muted);font-weight:700;margin-top:4px}
+
+/* level up */
 .level-up-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding:20px}
 .level-up-overlay.show{display:flex}
 .lu-title{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,4rem);color:var(--yellow);text-shadow:3px 3px 0 var(--red);letter-spacing:3px;animation:lvlPop .5s cubic-bezier(.34,1.56,.64,1) forwards}
@@ -113,30 +152,31 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 @keyframes carSpin{from{transform:scale(0) rotate(-180deg)}to{transform:scale(1) rotate(0)}}
 .lu-upgrade{font-size:1rem;color:var(--orange);font-weight:700;background:rgba(255,107,53,.15);border:1.5px solid var(--orange);border-radius:10px;padding:8px 20px}
 .lu-continue{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;border:none;border-radius:14px;padding:12px 40px;cursor:pointer;box-shadow:0 4px 0 #047857;transition:all .15s}
-.lu-continue:hover{transform:translateY(-2px)}
-.lu-continue:active{transform:translateY(2px)}
-.turbo-badge{display:none;align-items:center;gap:4px;font-size:.75rem;font-weight:800;color:var(--orange);background:rgba(255,107,53,.15);border:1.5px solid var(--orange);border-radius:8px;padding:3px 10px;margin-bottom:8px}
-.turbo-badge.visible{display:inline-flex}
+.lu-continue:hover{transform:translateY(-2px)}.lu-continue:active{transform:translateY(2px)}
+
+/* win */
 #winScreen{text-align:center;gap:20px}
 .win-trophy{font-size:5rem;animation:trophyBounce 1s ease-out infinite alternate}
 @keyframes trophyBounce{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-15px) rotate(5deg)}}
 .win-title{font-family:'Bangers',cursive;font-size:clamp(2rem,7vw,3.5rem);color:var(--yellow);text-shadow:3px 3px 0 var(--red);letter-spacing:3px}
-.certificate{background:linear-gradient(135deg,var(--card),var(--card2));border:3px solid var(--yellow);border-radius:20px;padding:24px;max-width:380px;width:100%;position:relative;overflow:hidden}
+.certificate{background:linear-gradient(135deg,var(--card),var(--card2));border:3px solid var(--yellow);border-radius:20px;padding:24px;max-width:380px;width:100%}
 .cert-title{font-family:'Bangers',cursive;font-size:1.3rem;color:var(--yellow);letter-spacing:2px;margin-bottom:12px}
 .cert-name{font-family:'Bangers',cursive;font-size:2rem;color:var(--orange);letter-spacing:2px;margin:8px 0}
-.cert-text{font-size:.9rem;color:var(--text);line-height:1.6;font-weight:600}
+.cert-text{font-size:.9rem;color:var(--text);font-weight:600;line-height:1.6}
 .cert-text strong{color:var(--yellow)}
 .final-stats{display:flex;gap:20px;justify-content:center;margin-top:12px}
 .final-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
 .final-stat-val{font-family:'Bangers',cursive;font-size:1.8rem;color:var(--yellow);line-height:1}
 .final-stat-label{font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase}
 .win-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px}
+.btn-secondary{font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:1px;background:var(--card);color:var(--text);border:2px solid var(--card2);border-radius:14px;padding:12px;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--yellow);color:var(--yellow)}
 .confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;animation:confettiFall linear forwards;z-index:300;pointer-events:none}
 @keyframes confettiFall{from{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(100vh) rotate(720deg);opacity:0}}
 </style>
 </head>
 <body>
-
+<button class="back-btn" onclick="goHome()">&#x2190; Hauptseite</button>
 <div class="stars" id="stars"></div>
 
 <div class="feedback-toast" id="feedbackToast">
@@ -144,7 +184,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="ft-text" id="ftText"></div>
   <div class="ft-points" id="ftPoints"></div>
 </div>
-
 <div class="level-up-overlay" id="levelUpOverlay">
   <div class="lu-title" id="luTitle">Level 2!</div>
   <div class="lu-car" id="luCar">&#x1F3CE;</div>
@@ -152,16 +191,13 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <button class="lu-continue" onclick="closeLevelUp()">Weiter &#x1F680;</button>
 </div>
 
-<!-- START -->
+<!-- ════ START ════ -->
 <div class="screen active" id="startScreen">
   <div class="big-car">&#x1F3CE;</div>
   <h1 class="game-title">Auto Mathe-Rennen</h1>
   <p class="game-subtitle">Rechne richtig und lass deinen Rennwagen fliegen!</p>
 
-  <div class="input-group">
-    <label>Dein Name (Fahrer)</label>
-    <input type="text" id="playerName" placeholder="z.B. Max" maxlength="20" />
-  </div>
+  <div id="profileBadge"></div>
 
   <div class="mode-group">
     <label>Modus</label>
@@ -172,14 +208,12 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     </div>
   </div>
 
-  <div class="digit-group">
+  <div class="digit-group" id="digitGroup">
     <label>Zahlenbereich</label>
     <div class="digit-slider-row" id="digitSliderRow" onclick="cycleDigit()">
-      <span class="digit-label-left active" id="digitLabelLeft">1&ndash;9<br><small>Einstellig</small></span>
-      <div class="digit-track">
-        <div class="digit-knob" id="digitKnob"></div>
-      </div>
-      <span class="digit-label-right" id="digitLabelRight">10&ndash;99<br><small>Zweistellig</small></span>
+      <span class="digit-label-left active" id="digitLabelLeft">1-9<br><small>Einstellig</small></span>
+      <div class="digit-track"><div class="digit-knob" id="digitKnob"></div></div>
+      <span class="digit-label-right" id="digitLabelRight">10-99<br><small>Zweistellig</small></span>
     </div>
     <div class="digit-preview" id="digitPreview">z.B. 3 + 5 = ?</div>
   </div>
@@ -192,21 +226,36 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     </div>
   </div>
 
+  <div class="option-row" id="countToggle" onclick="toggleCount(this)">
+    <div class="toggle"></div>
+    <div>
+      <div class="option-label">&#x1F697; Zaehl-Modus</div>
+      <div class="option-desc">Autos zaehlen statt rechnen (ideal fuer Kleine)</div>
+    </div>
+  </div>
+
   <button class="btn-primary" onclick="startGame()">Gas geben! &#x1F3C1;</button>
 </div>
 
-<!-- GAME -->
+<!-- ════ GAME ════ -->
 <div class="screen" id="gameScreen">
   <div class="top-bar">
     <div class="stat-box"><div class="stat-val" id="scoreDisplay">0</div><div class="stat-label">Punkte</div></div>
     <div class="stat-box"><div class="stat-val" id="levelDisplay">1</div><div class="stat-label">Level</div></div>
     <div class="stat-box"><div class="stars-display" id="starsDisplay">&#9734;&#9734;&#9734;&#9734;&#9734;</div></div>
   </div>
-  <div class="mini-mode">
+
+  <div class="mini-mode" id="miniModeBar">
     <button class="mini-mode-btn active" data-mode="both" onclick="setMode('both',this,true)">+/- Beides</button>
     <button class="mini-mode-btn" data-mode="add" onclick="setMode('add',this,true)">+ Add.</button>
     <button class="mini-mode-btn" data-mode="sub" onclick="setMode('sub',this,true)">- Sub.</button>
   </div>
+
+  <div class="mode-badges">
+    <div class="game-badge badge-turbo" id="turboBadge">&#x26A1; Turbo</div>
+    <div class="game-badge badge-count" id="countBadge">&#x1F697; Zaehl-Modus</div>
+  </div>
+
   <div class="track-area">
     <div class="speed-lines" id="speedLines"></div>
     <div class="car-name" id="carName">Basis-Renner</div>
@@ -219,15 +268,24 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <div class="progress-label" id="progressLabel">Frage 1 von 3</div>
     <div class="car-showcase" id="carShowcase">&#x1F697;</div>
   </div>
+
+  <!-- Zaehl-Modus: auto-grid -->
+  <div class="count-scene" id="countScene">
+    <div class="count-scene-label">Wie viele Autos siehst du? &#x1F440;</div>
+    <div class="count-road" id="countRoad"></div>
+    <div class="count-road-strip"></div>
+  </div>
+
   <div class="timer-bar-wrap" id="timerBarWrap">
     <div class="timer-bar-fill" id="timerBarFill" style="width:100%"></div>
   </div>
-  <div class="turbo-badge" id="turboBadge">&#x26A1; Turbo-Modus aktiv</div>
+
   <div class="question-card">
     <div class="question-type" id="questionType">Addition +</div>
     <div class="question-text" id="questionText">? + ? = ?</div>
-    <div class="question-hint">Was ist das Ergebnis?</div>
+    <div class="question-hint" id="questionHint">Was ist das Ergebnis?</div>
   </div>
+
   <div class="answer-area">
     <input type="number" class="answer-input" id="answerInput" placeholder="?" inputmode="numeric"
       onkeydown="if(event.key==='Enter')checkAnswer()" />
@@ -235,7 +293,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 </div>
 
-<!-- WIN -->
+<!-- ════ WIN ════ -->
 <div class="screen" id="winScreen">
   <div class="win-trophy">&#x1F3C6;</div>
   <h1 class="win-title">Rennen gewonnen!</h1>
@@ -252,6 +310,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
   <div class="win-btns">
     <button class="btn-primary" onclick="restartGame()">Nochmal fahren!</button>
+    <button class="btn-secondary" onclick="goHome()">&#x1F3E0; Zur Hauptseite</button>
   </div>
 </div>
 
@@ -260,262 +319,300 @@ var CARS = [
   {name:'Basis-Renner',    emoji:'\u{1F697}', upgrade:'Motor aufgeruestet!'},
   {name:'Flitzer',         emoji:'\u{1F699}', upgrade:'Reifen gewechselt!'},
   {name:'Sportcoupe',      emoji:'\u{1F3CE}', upgrade:'Spoiler installiert!'},
-  {name:'Supersportwagen', emoji:'\u{1F697}', upgrade:'Turbobooster eingebaut!'},
+  {name:'Supersportwagen', emoji:'\u{1F697}', upgrade:'Turbobooster!'},
   {name:'Rennbolide',      emoji:'\u{1F3CE}', upgrade:'Nitro-Tank voll!'},
   {name:'Formel 1',        emoji:'\u{1F3C1}', upgrade:'DRS aktiviert!'},
   {name:'Strassenraeuber', emoji:'\u{1F693}', upgrade:'V8-Motor pur!'},
   {name:'Rallye-Koenig',   emoji:'\u{1F695}', upgrade:'Allradantrieb!'},
   {name:'Monster-Truck',   emoji:'\u{1F699}', upgrade:'Riesenraeder!'},
-  {name:'Raketen-Renner',  emoji:'\u{1F680}', upgrade:'Du bist der Champion!'}
+  {name:'Raketen-Renner',  emoji:'\u{1F680}', upgrade:'Du bist Champion!'}
 ];
+// Different car emojis for count scene variety
+var COUNT_CARS = ['\u{1F697}','\u{1F699}','\u{1F695}','\u{1F693}','\u{1F3CE}'];
 
-var QPERLEVEL = 3;
-var TOTAL_LEVELS = 10;
-var TURBO_TIME = 8000;
+var QPERLEVEL = 3, TOTAL_LEVELS = 10, TURBO_TIME = 8000;
+var STORAGE_KEY = 'matheArcadeProfiles';
+var ACTIVE_KEY  = 'matheArcadeActiveProfile';
+var GAME_ID     = 'auto';
 
 var state = {
   level:1, score:0, correct:0, wrong:0, questionInLevel:0,
-  mode:'both', digitMode:'single', turbo:false,
+  mode:'both', digitMode:'single', turbo:false, countMode:false,
   playerName:'Rennfahrer', a:0, b:0, op:'+',
-  timerStart:0, timerInterval:null
+  timerStart:0, timerInterval:null,
+  lastKey:'' // for no-repeat tracking
 };
-
-var selectedMode = 'both';
-var turboEnabled = false;
-var digitMode = 'single';
+var selectedMode = 'both', turboEnabled = false, countEnabled = false, digitMode = 'single';
 var digitCycle = ['single','double','both'];
 var digitPreviews = {single:'z.B. 3 + 5 = ?', double:'z.B. 14 + 27 = ?', both:'z.B. 6 + 23 = ?'};
 var MSG_RIGHT = ['Super!','Richtig!','Genial!','Boom!','Perfekt!'];
 var MSG_WRONG = ['Nochmal!','Nicht ganz...','Weiter so!','Probier nochmal!'];
 
-function cycleDigit() {
-  var idx = digitCycle.indexOf(digitMode);
-  digitMode = digitCycle[(idx + 1) % digitCycle.length];
+// ── Profile ──
+function loadProfiles(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{};}catch(e){return{};} }
+function saveProfiles(p){ localStorage.setItem(STORAGE_KEY,JSON.stringify(p)); }
+function getActiveId(){ return localStorage.getItem(ACTIVE_KEY)||null; }
+function getActiveProfile(){ var p=loadProfiles(),id=getActiveId(); return(id&&p[id])?p[id]:null; }
+function saveGameResult(score,correct){
+  var id=getActiveId(); if(!id) return;
+  var profiles=loadProfiles(); if(!profiles[id]) return;
+  if(!profiles[id].games) profiles[id].games={};
+  var g=profiles[id].games[GAME_ID]||{bestScore:0,totalRight:0,gamesPlayed:0};
+  g.bestScore=Math.max(g.bestScore,score); g.totalRight+=correct;
+  g.gamesPlayed=(g.gamesPlayed||0)+1;
+  profiles[id].games[GAME_ID]=g; saveProfiles(profiles);
+}
+function renderProfileBadge(){
+  var el=document.getElementById('profileBadge'), p=getActiveProfile();
+  if(p){
+    var g=(p.games&&p.games[GAME_ID])||{}, best=g.bestScore||0;
+    el.innerHTML='<div class="profile-badge"><div class="pb-avatar">'+p.avatar+'</div>'
+      +'<div><div class="pb-name">'+escHtml(p.name)+'</div>'
+      +'<div class="pb-sub">'+(best>0?'\u2B50 Bestpunktzahl: '+best:'Noch nicht gespielt')+'</div></div></div>';
+  } else {
+    el.innerHTML='<div class="pb-nosave">&#x26A0; Kein Profil &mdash; Punkte werden nicht gespeichert</div>';
+  }
+}
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function goHome(){ window.location.href='index.html'; }
+
+// ── Digit slider ──
+function cycleDigit(){
+  if(countEnabled) return;
+  digitMode=digitCycle[(digitCycle.indexOf(digitMode)+1)%digitCycle.length];
   updateDigitUI();
 }
-
-function updateDigitUI() {
-  var knob = document.getElementById('digitKnob');
-  var left = document.getElementById('digitLabelLeft');
-  var right = document.getElementById('digitLabelRight');
-  var row = document.getElementById('digitSliderRow');
-  var preview = document.getElementById('digitPreview');
-  knob.className = 'digit-knob' + (digitMode !== 'single' ? ' ' + digitMode : '');
-  preview.textContent = digitPreviews[digitMode];
-  left.className = 'digit-label-left' + (digitMode === 'single' ? ' active' : digitMode === 'both' ? ' semi' : '');
-  right.className = 'digit-label-right' + (digitMode === 'double' ? ' active' : digitMode === 'both' ? ' semi' : '');
-  row.style.borderColor = digitMode === 'single' ? 'var(--green)' : digitMode === 'double' ? 'var(--orange)' : 'var(--yellow)';
+function updateDigitUI(){
+  document.getElementById('digitKnob').className='digit-knob'+(digitMode!=='single'?' '+digitMode:'');
+  document.getElementById('digitPreview').textContent=digitPreviews[digitMode];
+  var left=document.getElementById('digitLabelLeft'),right=document.getElementById('digitLabelRight'),row=document.getElementById('digitSliderRow');
+  left.className='digit-label-left'+(digitMode==='single'?' active':digitMode==='both'?' semi':'');
+  right.className='digit-label-right'+(digitMode==='double'?' active':digitMode==='both'?' semi':'');
+  row.style.borderColor=digitMode==='single'?'var(--green)':digitMode==='double'?'var(--orange)':'var(--yellow)';
 }
 
-function setMode(mode, btn, inGame) {
-  selectedMode = mode;
-  state.mode = mode;
-  var sel = inGame ? '.mini-mode-btn' : '.mode-btn';
-  var btns = document.querySelectorAll(sel);
-  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+// ── Mode & toggles ──
+function setMode(mode,btn,inGame){
+  selectedMode=mode; state.mode=mode;
+  var sel=inGame?'.mini-mode-btn':'.mode-btn';
+  var btns=document.querySelectorAll(sel);
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('active');
   btn.classList.add('active');
-  if (inGame) newQuestion();
+  if(inGame) newQuestion();
+}
+function toggleTurbo(el){ turboEnabled=!turboEnabled; el.classList.toggle('enabled',turboEnabled); }
+function toggleCount(el){
+  countEnabled=!countEnabled;
+  el.classList.toggle('enabled-blue',countEnabled);
+  // Dim digit slider and turbo when count mode on (not relevant)
+  document.getElementById('digitGroup').classList.toggle('dimmed', countEnabled);
+  document.getElementById('turboToggle').classList.toggle('dimmed', countEnabled);
 }
 
-function toggleTurbo(el) {
-  turboEnabled = !turboEnabled;
-  el.classList.toggle('enabled', turboEnabled);
-}
-
-function showScreen(id) {
-  var screens = document.querySelectorAll('.screen');
-  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+// ── Screen ──
+function showScreen(id){
+  var ss=document.querySelectorAll('.screen');
+  for(var i=0;i<ss.length;i++) ss[i].classList.remove('active');
   document.getElementById(id).classList.add('active');
 }
 
-function randNum(dm) {
-  if (dm === 'single') return Math.floor(Math.random() * 9) + 1;
-  if (dm === 'double') return Math.floor(Math.random() * 90) + 10;
-  return Math.random() < 0.5 ? Math.floor(Math.random() * 9) + 1 : Math.floor(Math.random() * 90) + 10;
+// ── Number generator with no-repeat ──
+function randNum(dm){ if(dm==='single') return Math.floor(Math.random()*9)+1; if(dm==='double') return Math.floor(Math.random()*90)+10; return Math.random()<.5?Math.floor(Math.random()*9)+1:Math.floor(Math.random()*90)+10; }
+
+function makeQuestion(dm, opMode, lastKey, maxAttempts) {
+  maxAttempts = maxAttempts || 20;
+  for(var i=0; i<maxAttempts; i++){
+    var a=randNum(dm), b=randNum(dm), op;
+    if(opMode==='add') op='+'; else if(opMode==='sub') op='-'; else op=Math.random()<.5?'+':'-';
+    if(op==='-'&&b>a){var t=a;a=b;b=t;}
+    var key=a+''+op+''+b;
+    if(key!==lastKey) return {a:a,b:b,op:op,key:key};
+  }
+  // fallback: return whatever we got last
+  var a2=randNum(dm),b2=randNum(dm),op2=opMode==='add'?'+':(opMode==='sub'?'-':(Math.random()<.5?'+':'-'));
+  if(op2==='-'&&b2>a2){var t2=a2;a2=b2;b2=t2;}
+  return {a:a2,b:b2,op:op2,key:a2+''+op2+''+b2};
 }
 
-function newQuestion() {
+// ── Count mode: generate a count (no-repeat) ──
+function makeCount(maxCount, lastKey) {
+  for(var i=0;i<20;i++){
+    var n=Math.floor(Math.random()*maxCount)+1;
+    if(String(n)!==lastKey) return n;
+  }
+  return Math.floor(Math.random()*maxCount)+1;
+}
+
+// ── New question ──
+function newQuestion(){
   clearTimerBar();
-  var dm = state.digitMode || 'single';
-  var a = randNum(dm);
-  var b = randNum(dm);
-  var op;
-  if (state.mode === 'add') op = '+';
-  else if (state.mode === 'sub') op = '-';
-  else op = Math.random() < 0.5 ? '+' : '-';
-  if (op === '-' && b > a) { var t = a; a = b; b = t; }
-  state.a = a; state.b = b; state.op = op;
-  document.getElementById('questionType').textContent = op === '+' ? 'Addition +' : 'Subtraktion -';
-  document.getElementById('questionText').textContent = a + ' ' + op + ' ' + b + ' = ?';
-  var inp = document.getElementById('answerInput');
-  inp.value = '';
-  inp.className = 'answer-input';
-  if (state.turbo) startTimerBar();
+  var scene=document.getElementById('countScene');
+
+  if(state.countMode){
+    // Count mode: show cars, ask how many
+    var maxCount = Math.min(3+state.level, 9); // grows with level, max 9
+    var n = makeCount(maxCount, state.lastKey);
+    state.lastKey = String(n);
+    state.a = n; state.b = 0; state.op = 'count';
+
+    // Pick a car emoji for this round
+    var carEmoji = COUNT_CARS[Math.floor(Math.random()*COUNT_CARS.length)];
+
+    // Build the car grid
+    var road=document.getElementById('countRoad'); road.innerHTML='';
+    for(var i=0;i<n;i++){
+      var el=document.createElement('span');
+      el.className='count-car';
+      el.textContent=carEmoji;
+      el.style.animationDelay=(i*0.08)+'s';
+      road.appendChild(el);
+    }
+
+    scene.classList.add('visible');
+    document.getElementById('questionType').textContent='Zahlen \u{1F440}';
+    document.getElementById('questionText').textContent='Wie viele Autos?';
+    document.getElementById('questionHint').textContent='Zaehle die Autos und gib die Zahl ein!';
+  } else {
+    // Normal math mode
+    scene.classList.remove('visible');
+    var dm=state.digitMode||'single';
+    var q=makeQuestion(dm, state.mode, state.lastKey);
+    state.a=q.a; state.b=q.b; state.op=q.op; state.lastKey=q.key;
+    document.getElementById('questionType').textContent=q.op==='+'?'Addition +':'Subtraktion -';
+    document.getElementById('questionText').textContent=q.a+' '+q.op+' '+q.b+' = ?';
+    document.getElementById('questionHint').textContent='Was ist das Ergebnis?';
+  }
+
+  var inp=document.getElementById('answerInput'); inp.value=''; inp.className='answer-input';
+  if(state.turbo&&!state.countMode) startTimerBar();
   inp.focus();
 }
 
-function checkAnswer() {
-  var inp = document.getElementById('answerInput');
-  var val = parseInt(inp.value, 10);
-  if (isNaN(val)) { inp.focus(); return; }
-  var correct = state.op === '+' ? state.a + state.b : state.a - state.b;
+// ── Check answer ──
+function checkAnswer(){
+  var inp=document.getElementById('answerInput'), val=parseInt(inp.value,10);
+  if(isNaN(val)){inp.focus();return;}
+
+  var correct = state.op==='count' ? state.a : (state.op==='+'?state.a+state.b:state.a-state.b);
   clearTimerBar();
-  if (val === correct) {
-    var pts = 10;
-    if (state.turbo) pts += Math.max(0, Math.round((1 - (Date.now() - state.timerStart) / TURBO_TIME) * 10));
-    state.score += pts; state.correct++; state.questionInLevel++;
-    inp.className = 'answer-input correct';
-    showFeedback(true, pts);
-    setTimeout(function() {
-      inp.className = 'answer-input';
-      if (state.questionInLevel >= QPERLEVEL) {
-        state.questionInLevel = 0;
-        if (state.level >= TOTAL_LEVELS) { setTimeout(showWin, 500); }
-        else { state.level++; updateHUD(); updateCar(); updateProgressBar(); showLevelUp(); }
-      } else { updateHUD(); updateProgressBar(); newQuestion(); }
-    }, 600);
+
+  if(val===correct){
+    var pts=10;
+    if(state.turbo&&!state.countMode) pts+=Math.max(0,Math.round((1-(Date.now()-state.timerStart)/TURBO_TIME)*10));
+    state.score+=pts; state.correct++; state.questionInLevel++;
+
+    // In count mode: animate the cars
+    if(state.countMode){
+      var cars=document.querySelectorAll('.count-car');
+      for(var i=0;i<cars.length;i++){
+        (function(c,d){setTimeout(function(){c.classList.add('pop');},d);})(cars[i],i*60);
+      }
+    }
+
+    inp.className='answer-input correct'; showFeedback(true,pts);
+    setTimeout(function(){
+      inp.className='answer-input';
+      if(state.questionInLevel>=QPERLEVEL){
+        state.questionInLevel=0;
+        if(state.level>=TOTAL_LEVELS){setTimeout(showWin,500);}
+        else{state.level++;updateHUD();updateCar();updateProgressBar();showLevelUp();}
+      } else {updateHUD();updateProgressBar();newQuestion();}
+    },state.countMode?1000:600);
   } else {
-    state.wrong++;
-    inp.className = 'answer-input wrong';
-    showFeedback(false, 0);
-    setTimeout(function() {
-      inp.className = 'answer-input'; inp.value = '';
-      if (state.turbo) startTimerBar();
-      inp.focus();
-    }, 600);
+    state.wrong++; inp.className='answer-input wrong'; showFeedback(false,0);
+    setTimeout(function(){inp.className='answer-input';inp.value='';if(state.turbo&&!state.countMode)startTimerBar();inp.focus();},600);
   }
 }
 
-function showFeedback(ok, pts) {
-  var toast = document.getElementById('feedbackToast');
-  var list = ok ? MSG_RIGHT : MSG_WRONG;
-  document.getElementById('ftEmoji').textContent = ok ? '\u2705' : '\u274C';
-  document.getElementById('ftText').textContent = list[Math.floor(Math.random() * list.length)];
-  document.getElementById('ftText').style.color = ok ? 'var(--green)' : 'var(--red)';
-  document.getElementById('ftPoints').textContent = ok ? '+' + pts + ' Punkte' : '';
-  toast.classList.add('show');
-  setTimeout(function() { toast.classList.remove('show'); }, 900);
+function showFeedback(ok,pts){
+  var toast=document.getElementById('feedbackToast'), list=ok?MSG_RIGHT:MSG_WRONG;
+  document.getElementById('ftEmoji').textContent=ok?'\u2705':'\u274C';
+  document.getElementById('ftText').textContent=list[Math.floor(Math.random()*list.length)];
+  document.getElementById('ftText').style.color=ok?'var(--green)':'var(--red)';
+  document.getElementById('ftPoints').textContent=ok?'+'+pts+' Punkte':'';
+  toast.classList.add('show'); setTimeout(function(){toast.classList.remove('show');},900);
 }
-
-function updateHUD() {
-  document.getElementById('scoreDisplay').textContent = state.score;
-  document.getElementById('levelDisplay').textContent = state.level;
-  var n = Math.min(5, Math.floor((state.level - 1) / 2));
-  document.getElementById('starsDisplay').textContent = '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+function updateHUD(){
+  document.getElementById('scoreDisplay').textContent=state.score;
+  document.getElementById('levelDisplay').textContent=state.level;
+  var n=Math.min(5,Math.floor((state.level-1)/2));
+  document.getElementById('starsDisplay').textContent='\u2605'.repeat(n)+'\u2606'.repeat(5-n);
 }
-
-function updateCar() {
-  var car = CARS[Math.min(state.level - 1, CARS.length - 1)];
-  document.getElementById('carName').textContent = car.name + ' ' + car.emoji;
-  document.getElementById('carShowcase').textContent = car.emoji;
-  document.getElementById('progressCar').textContent = car.emoji;
+function updateCar(){
+  var car=CARS[Math.min(state.level-1,CARS.length-1)];
+  document.getElementById('carName').textContent=car.name+' '+car.emoji;
+  document.getElementById('carShowcase').textContent=car.emoji;
+  document.getElementById('progressCar').textContent=car.emoji;
 }
-
-function updateProgressBar() {
-  document.getElementById('progressFill').style.width = (state.questionInLevel / QPERLEVEL * 100) + '%';
-  document.getElementById('progressLabel').textContent = 'Frage ' + (state.questionInLevel + 1) + ' von ' + QPERLEVEL + ' (Level ' + state.level + ')';
+function updateProgressBar(){
+  document.getElementById('progressFill').style.width=(state.questionInLevel/QPERLEVEL*100)+'%';
+  document.getElementById('progressLabel').textContent='Frage '+(state.questionInLevel+1)+' von '+QPERLEVEL+' (Level '+state.level+')';
 }
-
-function showLevelUp() {
-  var car = CARS[Math.min(state.level - 1, CARS.length - 1)];
-  document.getElementById('luTitle').textContent = 'Level ' + state.level + '!';
-  document.getElementById('luCar').textContent = car.emoji;
-  document.getElementById('luUpgrade').textContent = car.upgrade;
+function showLevelUp(){
+  var car=CARS[Math.min(state.level-1,CARS.length-1)];
+  document.getElementById('luTitle').textContent='Level '+state.level+'!';
+  document.getElementById('luCar').textContent=car.emoji;
+  document.getElementById('luUpgrade').textContent=car.upgrade;
   document.getElementById('levelUpOverlay').classList.add('show');
 }
+function closeLevelUp(){ document.getElementById('levelUpOverlay').classList.remove('show'); newQuestion(); document.getElementById('answerInput').focus(); }
 
-function closeLevelUp() {
-  document.getElementById('levelUpOverlay').classList.remove('show');
-  newQuestion();
-  document.getElementById('answerInput').focus();
+function startTimerBar(){
+  state.timerStart=Date.now(); var fill=document.getElementById('timerBarFill');
+  fill.style.transition='none'; fill.style.width='100%';
+  requestAnimationFrame(function(){fill.style.transition='width '+TURBO_TIME+'ms linear';fill.style.width='0%';});
+  state.timerInterval=setTimeout(function(){
+    state.wrong++; var inp=document.getElementById('answerInput'); inp.className='answer-input wrong'; showFeedback(false,0);
+    setTimeout(function(){inp.className='answer-input';inp.value='';startTimerBar();inp.focus();},600);
+  },TURBO_TIME);
+}
+function clearTimerBar(){ if(state.timerInterval){clearTimeout(state.timerInterval);state.timerInterval=null;} var fill=document.getElementById('timerBarFill'); fill.style.transition='none'; fill.style.width='100%'; }
+
+function startGame(){
+  var p=getActiveProfile();
+  state.playerName=p?p.name:'Rennfahrer';
+  state.mode=selectedMode; state.turbo=turboEnabled; state.digitMode=digitMode;
+  state.countMode=countEnabled;
+  state.level=1;state.score=0;state.correct=0;state.wrong=0;state.questionInLevel=0;
+  state.lastKey='';
+
+  showScreen('gameScreen'); updateHUD(); updateCar(); updateProgressBar();
+
+  // mini-mode bar: hide in count mode (not relevant)
+  document.getElementById('miniModeBar').style.display = state.countMode ? 'none' : 'flex';
+
+  document.getElementById('timerBarWrap').style.display=(state.turbo&&!state.countMode)?'block':'none';
+  document.getElementById('turboBadge').classList.toggle('visible', state.turbo&&!state.countMode);
+  document.getElementById('countBadge').classList.toggle('visible', state.countMode);
+
+  var mmbtns=document.querySelectorAll('.mini-mode-btn');
+  for(var i=0;i<mmbtns.length;i++) mmbtns[i].classList.toggle('active',mmbtns[i].dataset.mode===state.mode);
+
+  newQuestion(); document.getElementById('answerInput').focus();
 }
 
-function startTimerBar() {
-  state.timerStart = Date.now();
-  var fill = document.getElementById('timerBarFill');
-  fill.style.transition = 'none';
-  fill.style.width = '100%';
-  requestAnimationFrame(function() {
-    fill.style.transition = 'width ' + TURBO_TIME + 'ms linear';
-    fill.style.width = '0%';
-  });
-  state.timerInterval = setTimeout(function() {
-    state.wrong++;
-    var inp = document.getElementById('answerInput');
-    inp.className = 'answer-input wrong';
-    showFeedback(false, 0);
-    setTimeout(function() { inp.className = 'answer-input'; inp.value = ''; startTimerBar(); inp.focus(); }, 600);
-  }, TURBO_TIME);
-}
-
-function clearTimerBar() {
-  if (state.timerInterval) { clearTimeout(state.timerInterval); state.timerInterval = null; }
-  var fill = document.getElementById('timerBarFill');
-  fill.style.transition = 'none';
-  fill.style.width = '100%';
-}
-
-function startGame() {
-  state.playerName = document.getElementById('playerName').value.trim() || 'Rennfahrer';
-  state.mode = selectedMode;
-  state.turbo = turboEnabled;
-  state.digitMode = digitMode;
-  state.level = 1; state.score = 0; state.correct = 0; state.wrong = 0; state.questionInLevel = 0;
-  showScreen('gameScreen');
-  updateHUD(); updateCar(); updateProgressBar();
-  document.getElementById('timerBarWrap').style.display = state.turbo ? 'block' : 'none';
-  if (state.turbo) document.getElementById('turboBadge').classList.add('visible');
-  else document.getElementById('turboBadge').classList.remove('visible');
-  var mmbtns = document.querySelectorAll('.mini-mode-btn');
-  for (var i = 0; i < mmbtns.length; i++) mmbtns[i].classList.toggle('active', mmbtns[i].dataset.mode === state.mode);
-  newQuestion();
-  document.getElementById('answerInput').focus();
-}
-
-function showWin() {
+function showWin(){
+  saveGameResult(state.score,state.correct);
   showScreen('winScreen');
-  document.getElementById('winName').textContent = state.playerName;
-  document.getElementById('finalScore').textContent = state.score;
-  document.getElementById('finalCorrect').textContent = state.correct;
+  var p=getActiveProfile();
+  document.getElementById('winName').textContent=p?p.avatar+' '+p.name:state.playerName;
+  document.getElementById('finalScore').textContent=state.score;
+  document.getElementById('finalCorrect').textContent=state.correct;
   launchConfetti();
 }
-
-function launchConfetti() {
-  var colors = ['#e63946','#ff6b35','#ffd60a','#06d6a0','#4cc9f0','#fff'];
-  for (var i = 0; i < 80; i++) {
-    (function(delay) {
-      setTimeout(function() {
-        var el = document.createElement('div');
-        el.className = 'confetti-piece';
-        var c = colors[Math.floor(Math.random() * colors.length)];
-        el.style.cssText = 'left:' + (Math.random()*100) + 'vw;top:-10px;background:' + c + ';width:' + (6+Math.random()*10) + 'px;height:' + (6+Math.random()*10) + 'px;border-radius:' + (Math.random()>.5?'50%':'2px') + ';animation-duration:' + (1.5+Math.random()*2) + 's;';
-        document.body.appendChild(el);
-        setTimeout(function() { el.parentNode && el.parentNode.removeChild(el); }, 3500);
-      }, delay);
-    })(i * 40);
-  }
+function launchConfetti(){
+  var colors=['#e63946','#ff6b35','#ffd60a','#06d6a0','#4cc9f0','#fff'];
+  for(var i=0;i<80;i++){(function(d){setTimeout(function(){var el=document.createElement('div');el.className='confetti-piece';var c=colors[Math.floor(Math.random()*colors.length)];el.style.cssText='left:'+(Math.random()*100)+'vw;top:-10px;background:'+c+';width:'+(6+Math.random()*10)+'px;height:'+(6+Math.random()*10)+'px;border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.5+Math.random()*2)+'s;';document.body.appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3500);},d);})(i*40);}
 }
+function restartGame(){ showScreen('startScreen'); renderProfileBadge(); }
 
-function restartGame() { showScreen('startScreen'); }
-
-// Init
-(function() {
-  var s = document.getElementById('stars');
-  for (var i = 0; i < 60; i++) {
-    var el = document.createElement('div');
-    el.className = 'star';
-    var size = Math.random() * 2.5 + 0.5;
-    el.style.cssText = 'width:'+size+'px;height:'+size+'px;left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;animation-delay:'+(Math.random()*3)+'s;animation-duration:'+(2+Math.random()*3)+'s;';
-    s.appendChild(el);
-  }
-  var sl = document.getElementById('speedLines');
-  for (var j = 0; j < 6; j++) {
-    var sl_el = document.createElement('div');
-    sl_el.className = 'speed-line';
-    sl_el.style.cssText = 'top:'+(15+Math.random()*70)+'%;width:'+(30+Math.random()*60)+'px;animation-delay:'+(Math.random()*0.6)+'s;animation-duration:'+(0.4+Math.random()*0.4)+'s;';
-    sl.appendChild(sl_el);
-  }
+(function init(){
+  var s=document.getElementById('stars');
+  for(var i=0;i<60;i++){var el=document.createElement('div');el.className='star';var sz=Math.random()*2.5+0.5;el.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;animation-delay:'+(Math.random()*3)+'s;animation-duration:'+(2+Math.random()*3)+'s;';s.appendChild(el);}
+  var sl=document.getElementById('speedLines');
+  for(var j=0;j<6;j++){var se=document.createElement('div');se.className='speed-line';se.style.cssText='top:'+(15+Math.random()*70)+'%;width:'+(30+Math.random()*60)+'px;animation-delay:'+(Math.random()*0.6)+'s;animation-duration:'+(0.4+Math.random()*0.4)+'s;';sl.appendChild(se);}
   updateDigitUI();
+  renderProfileBadge();
 })();
 </script>
 </body>
