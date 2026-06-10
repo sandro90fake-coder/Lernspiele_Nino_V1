@@ -95,23 +95,20 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .speed-line{position:absolute;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,214,10,.4));animation:speedLine .6s linear infinite;opacity:0}
 @keyframes speedLine{from{transform:translateX(100%);opacity:.6}to{transform:translateX(-200%);opacity:0}}
 
-/* ── Car count scene (Zaehl-Modus) ── */
-.count-scene{width:100%;max-width:500px;background:var(--card);border-radius:20px;border:2.5px solid var(--blue);padding:18px 14px 14px;margin-bottom:10px;text-align:center;display:none;position:relative;overflow:hidden}
-.count-scene.visible{display:block}
-.count-scene-label{font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;color:var(--blue);margin-bottom:10px}
-.count-road{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;min-height:64px}
-.count-car{font-size:clamp(1.8rem,6vw,2.6rem);animation:countCarPop .35s cubic-bezier(.34,1.56,.64,1) both;cursor:default;transition:transform .15s;display:inline-block}
-.count-car:hover{transform:scale(1.2) rotate(-5deg)}
-@keyframes countCarPop{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
-.count-car.pop{animation:countCarBig .5s ease forwards}
-@keyframes countCarBig{0%,100%{transform:scale(1)}40%{transform:scale(1.5) rotate(-10deg)}}
-/* road stripes under cars */
-.count-road-strip{height:6px;background:repeating-linear-gradient(90deg,var(--card2) 0,var(--card2) 20px,transparent 20px,transparent 30px);border-radius:3px;margin-top:8px;opacity:.5}
+/* ── Visual math (Zaehl-Modus): cars shown under each number ── */
+.visual-math{display:flex;align-items:flex-start;justify-content:center;gap:12px;margin:8px 0 10px;flex-wrap:wrap}
+.visual-group{display:flex;flex-direction:column;align-items:center;gap:5px}
+.visual-cars{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:180px}
+.v-car{font-size:clamp(1.3rem,4vw,1.8rem);animation:vCarPop .3s cubic-bezier(.34,1.56,.64,1) both;display:inline-block;line-height:1}
+@keyframes vCarPop{from{transform:scale(0) rotate(-15deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.v-car.pop{animation:vCarBig .45s ease forwards}
+@keyframes vCarBig{0%,100%{transform:scale(1)}40%{transform:scale(1.5) rotate(-8deg)}}
+.visual-op{font-family:'Bangers',cursive;font-size:2.2rem;color:var(--yellow);align-self:center;padding-top:18px}
+.visual-num{font-family:'Bangers',cursive;font-size:1.6rem;color:var(--blue);letter-spacing:1px}
 
-/* question card */
 .question-card{width:100%;max-width:500px;background:var(--card);border-radius:20px;border:2px solid var(--card2);padding:18px 20px;text-align:center;margin-bottom:10px}
 .question-type{font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-.question-text{font-family:'Bangers',cursive;font-size:clamp(2rem,8vw,3.5rem);color:var(--text);letter-spacing:2px;margin-bottom:10px;line-height:1.1}
+.question-text{font-family:'Bangers',cursive;font-size:clamp(2rem,8vw,3.5rem);color:var(--text);letter-spacing:2px;margin-bottom:4px;line-height:1.1}
 .question-hint{font-size:.85rem;color:var(--muted);font-weight:600}
 
 /* answer */
@@ -269,13 +266,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     <div class="car-showcase" id="carShowcase">&#x1F697;</div>
   </div>
 
-  <!-- Zaehl-Modus: auto-grid -->
-  <div class="count-scene" id="countScene">
-    <div class="count-scene-label">Wie viele Autos siehst du? &#x1F440;</div>
-    <div class="count-road" id="countRoad"></div>
-    <div class="count-road-strip"></div>
-  </div>
-
   <div class="timer-bar-wrap" id="timerBarWrap">
     <div class="timer-bar-fill" id="timerBarFill" style="width:100%"></div>
   </div>
@@ -283,10 +273,20 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="question-card">
     <div class="question-type" id="questionType">Addition +</div>
     <div class="question-text" id="questionText">? + ? = ?</div>
+    <!-- Visual car rows shown in count mode -->
+    <div class="visual-math" id="visualMath" style="display:none">
+      <div class="visual-group" id="visualGroupA">
+        <div class="visual-cars" id="visualCarsA"></div>
+      </div>
+      <div class="visual-op" id="visualOp">+</div>
+      <div class="visual-group" id="visualGroupB">
+        <div class="visual-cars" id="visualCarsB"></div>
+      </div>
+    </div>
     <div class="question-hint" id="questionHint">Was ist das Ergebnis?</div>
   </div>
 
-  <div class="answer-area">
+  <div class="answer-area" id="answerArea">
     <input type="number" class="answer-input" id="answerInput" placeholder="?" inputmode="numeric"
       onkeydown="if(event.key==='Enter')checkAnswer()" />
     <button class="submit-btn" onclick="checkAnswer()">GO!</button>
@@ -404,9 +404,6 @@ function toggleTurbo(el){ turboEnabled=!turboEnabled; el.classList.toggle('enabl
 function toggleCount(el){
   countEnabled=!countEnabled;
   el.classList.toggle('enabled-blue',countEnabled);
-  // Dim digit slider and turbo when count mode on (not relevant)
-  document.getElementById('digitGroup').classList.toggle('dimmed', countEnabled);
-  document.getElementById('turboToggle').classList.toggle('dimmed', countEnabled);
 }
 
 // ── Screen ──
@@ -434,57 +431,53 @@ function makeQuestion(dm, opMode, lastKey, maxAttempts) {
   return {a:a2,b:b2,op:op2,key:a2+''+op2+''+b2};
 }
 
-// ── Count mode: generate a count (no-repeat) ──
-function makeCount(maxCount, lastKey) {
-  for(var i=0;i<20;i++){
-    var n=Math.floor(Math.random()*maxCount)+1;
-    if(String(n)!==lastKey) return n;
+// ── Build visual car rows for count mode ──
+function buildCarRows(n, containerId) {
+  var carEmoji = COUNT_CARS[Math.floor(Math.random()*COUNT_CARS.length)];
+  var wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  for(var i=0; i<n; i++){
+    var el = document.createElement('span');
+    el.className = 'v-car';
+    el.textContent = carEmoji;
+    el.style.animationDelay = (i * 0.06) + 's';
+    wrap.appendChild(el);
   }
-  return Math.floor(Math.random()*maxCount)+1;
+}
+
+function animateCarRows() {
+  var cars = document.querySelectorAll('.v-car');
+  for(var i=0; i<cars.length; i++){
+    (function(c,d){setTimeout(function(){c.classList.add('pop');},d);})(cars[i],i*40);
+  }
 }
 
 // ── New question ──
 function newQuestion(){
   clearTimerBar();
-  var scene=document.getElementById('countScene');
 
+  var dm = state.digitMode || 'single';
+  var q  = makeQuestion(dm, state.mode, state.lastKey);
+  state.a = q.a; state.b = q.b; state.op = q.op; state.lastKey = q.key;
+
+  document.getElementById('questionType').textContent = q.op==='+' ? 'Addition +' : 'Subtraktion -';
+  document.getElementById('questionText').textContent = q.a + ' ' + q.op + ' ' + q.b + ' = ?';
+  document.getElementById('questionHint').textContent = 'Was ist das Ergebnis?';
+
+  var vm = document.getElementById('visualMath');
   if(state.countMode){
-    // Count mode: show cars, ask how many
-    var maxCount = Math.min(3+state.level, 9); // grows with level, max 9
-    var n = makeCount(maxCount, state.lastKey);
-    state.lastKey = String(n);
-    state.a = n; state.b = 0; state.op = 'count';
-
-    // Pick a car emoji for this round
-    var carEmoji = COUNT_CARS[Math.floor(Math.random()*COUNT_CARS.length)];
-
-    // Build the car grid
-    var road=document.getElementById('countRoad'); road.innerHTML='';
-    for(var i=0;i<n;i++){
-      var el=document.createElement('span');
-      el.className='count-car';
-      el.textContent=carEmoji;
-      el.style.animationDelay=(i*0.08)+'s';
-      road.appendChild(el);
-    }
-
-    scene.classList.add('visible');
-    document.getElementById('questionType').textContent='Zahlen \u{1F440}';
-    document.getElementById('questionText').textContent='Wie viele Autos?';
-    document.getElementById('questionHint').textContent='Zaehle die Autos und gib die Zahl ein!';
+    // Show car rows under each operand
+    buildCarRows(q.a, 'visualCarsA');
+    buildCarRows(q.b, 'visualCarsB');
+    document.getElementById('visualOp').textContent = q.op;
+    vm.style.display = 'flex';
   } else {
-    // Normal math mode
-    scene.classList.remove('visible');
-    var dm=state.digitMode||'single';
-    var q=makeQuestion(dm, state.mode, state.lastKey);
-    state.a=q.a; state.b=q.b; state.op=q.op; state.lastKey=q.key;
-    document.getElementById('questionType').textContent=q.op==='+'?'Addition +':'Subtraktion -';
-    document.getElementById('questionText').textContent=q.a+' '+q.op+' '+q.b+' = ?';
-    document.getElementById('questionHint').textContent='Was ist das Ergebnis?';
+    vm.style.display = 'none';
   }
 
-  var inp=document.getElementById('answerInput'); inp.value=''; inp.className='answer-input';
-  if(state.turbo&&!state.countMode) startTimerBar();
+  var inp = document.getElementById('answerInput');
+  inp.value = ''; inp.className = 'answer-input';
+  if(state.turbo) startTimerBar();
   inp.focus();
 }
 
@@ -492,23 +485,13 @@ function newQuestion(){
 function checkAnswer(){
   var inp=document.getElementById('answerInput'), val=parseInt(inp.value,10);
   if(isNaN(val)){inp.focus();return;}
-
-  var correct = state.op==='count' ? state.a : (state.op==='+'?state.a+state.b:state.a-state.b);
+  var correct=state.op==='+'?state.a+state.b:state.a-state.b;
   clearTimerBar();
-
   if(val===correct){
     var pts=10;
-    if(state.turbo&&!state.countMode) pts+=Math.max(0,Math.round((1-(Date.now()-state.timerStart)/TURBO_TIME)*10));
+    if(state.turbo) pts+=Math.max(0,Math.round((1-(Date.now()-state.timerStart)/TURBO_TIME)*10));
     state.score+=pts; state.correct++; state.questionInLevel++;
-
-    // In count mode: animate the cars
-    if(state.countMode){
-      var cars=document.querySelectorAll('.count-car');
-      for(var i=0;i<cars.length;i++){
-        (function(c,d){setTimeout(function(){c.classList.add('pop');},d);})(cars[i],i*60);
-      }
-    }
-
+    if(state.countMode) animateCarRows();
     inp.className='answer-input correct'; showFeedback(true,pts);
     setTimeout(function(){
       inp.className='answer-input';
@@ -517,10 +500,10 @@ function checkAnswer(){
         if(state.level>=TOTAL_LEVELS){setTimeout(showWin,500);}
         else{state.level++;updateHUD();updateCar();updateProgressBar();showLevelUp();}
       } else {updateHUD();updateProgressBar();newQuestion();}
-    },state.countMode?1000:600);
+    },state.countMode?900:600);
   } else {
     state.wrong++; inp.className='answer-input wrong'; showFeedback(false,0);
-    setTimeout(function(){inp.className='answer-input';inp.value='';if(state.turbo&&!state.countMode)startTimerBar();inp.focus();},600);
+    setTimeout(function(){inp.className='answer-input';inp.value='';if(state.turbo)startTimerBar();inp.focus();},600);
   }
 }
 
@@ -578,8 +561,8 @@ function startGame(){
 
   showScreen('gameScreen'); updateHUD(); updateCar(); updateProgressBar();
 
-  // mini-mode bar: hide in count mode (not relevant)
-  document.getElementById('miniModeBar').style.display = state.countMode ? 'none' : 'flex';
+  // mini-mode bar visible in both modes (math mode relevant)
+  document.getElementById('miniModeBar').style.display = 'flex';
 
   document.getElementById('timerBarWrap').style.display=(state.turbo&&!state.countMode)?'block':'none';
   document.getElementById('turboBadge').classList.toggle('visible', state.turbo&&!state.countMode);
