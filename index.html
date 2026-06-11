@@ -105,6 +105,7 @@ body{font-family:'Nunito',sans-serif;background:var(--dark);color:var(--text);mi
 .game-card.theme-green {--c:var(--green); --cs:rgba(6,214,160,.12)}
 .game-card.theme-blue  {--c:var(--blue);  --cs:rgba(76,201,240,.12)}
 .game-card.theme-purple{--c:var(--purple);--cs:rgba(167,139,250,.12)}
+.game-card.theme-yellow{--c:var(--yellow);--cs:rgba(255,214,10,.12)}
 .game-card:hover{border-color:var(--c)}
 .game-card::before{background:var(--cs)}
 .card-emoji{font-size:2.8rem;line-height:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));transition:transform .3s}
@@ -274,6 +275,36 @@ body{font-family:'Nunito',sans-serif;background:var(--dark);color:var(--text);mi
       <div class="card-tag">&#x26A1; Neu</div>
       <div class="card-title">Superhelden Lese-Abenteuer</div>
       <div class="card-desc">Lies das Wort und tippe das richtige Bild &mdash; werde vom Lehrling zum Ultra-Held!</div>
+      <div class="card-meta">
+        <div class="card-meta-info">
+          <div class="card-pill">Level <span>1&ndash;8</span></div>
+          <div class="card-pill">Alter <span>5+</span></div>
+        </div>
+        <div class="card-arrow">&#x2192;</div>
+      </div>
+    </a>
+
+    <!-- Farben-Zauber (active) -->
+    <a class="game-card theme-yellow" href="farben-spiel.html" onclick="addRipple(event)">
+      <div class="card-emoji">&#x1F308;</div>
+      <div class="card-tag">&#x1F7E3; Neu</div>
+      <div class="card-title">Farben-Zauber</div>
+      <div class="card-desc">Schau dir das Bild an und tippe die richtige Farbe &mdash; lerne alle Farben des Regenbogens!</div>
+      <div class="card-meta">
+        <div class="card-meta-info">
+          <div class="card-pill">Level <span>1&ndash;10</span></div>
+          <div class="card-pill">Alter <span>3+</span></div>
+        </div>
+        <div class="card-arrow">&#x2192;</div>
+      </div>
+    </a>
+
+    <!-- Uhrzeiten-Held (active) -->
+    <a class="game-card theme-blue" href="uhrzeit-spiel.html" onclick="addRipple(event)">
+      <div class="card-emoji">&#x23F0;</div>
+      <div class="card-tag">&#x23F1; Neu</div>
+      <div class="card-title">Uhrzeiten-Held</div>
+      <div class="card-desc">Schau dir die Uhr an und tippe die richtige Uhrzeit &mdash; volle, halbe und Viertelstunden!</div>
       <div class="card-meta">
         <div class="card-meta-info">
           <div class="card-pill">Level <span>1&ndash;8</span></div>
